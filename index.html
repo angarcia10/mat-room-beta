@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mat Room — Attendance & Weigh-In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --singlet: #b3122b; --singlet-deep: #7d0c1e; --mat: #16202b; --mat-line: #2a3a49;
+    --canvas: #f5f2ec; --card: #ffffff; --ink: #14181d; --ink-soft: #5a6572; --line: #e2ddd3;
+    --whistle: #e8a72e; --present: #2f9e6b; --absent: #c0392b; --excused: #d98c1f;
+    --shadow: 0 1px 3px rgba(20,24,29,.08), 0 1px 2px rgba(20,24,29,.04);
+    --flag: #a35c00; --flag-bg: #fdf1dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --canvas: #10161d; --card: #1a232d; --ink: #eef1f4; --ink-soft: #93a1b0;
+      --line: #2a3744; --mat: #0b1219; --mat-line: #24323f; --shadow: 0 1px 3px rgba(0,0,0,.4);
+      --flag: #f0b54a; --flag-bg: #2e2414;
+    }
+  }
+  :root[data-theme="dark"] {
+    --canvas: #10161d; --card: #1a232d; --ink: #eef1f4; --ink-soft: #93a1b0;
+    --line: #2a3744; --mat: #0b1219; --mat-line: #24323f; --shadow: 0 1px 3px rgba(0,0,0,.4);
+    --flag: #f0b54a; --flag-bg: #2e2414;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--canvas); color:var(--ink); font-family:'Inter',system-ui,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px 80px; }
+  header { background:var(--mat); color:#f5f2ec; border-bottom:3px solid var(--singlet); }
+  .header-inner { max-width:1080px; margin:0 auto; padding:22px 20px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:center; gap:14px; }
+  .mark { width:44px; height:44px; flex:none; border-radius:8px; background:var(--singlet); display:grid; place-items:center; box-shadow:inset 0 0 0 2px rgba(255,255,255,.12); }
+  .mark.logo { background: transparent; box-shadow: none; }
+  .mark.logo img { width: 100%; height: 100%; object-fit: contain; }
+  .mark svg { width:26px; height:26px; }
+  h1 { font-family:'Oswald',sans-serif; font-weight:700; letter-spacing:.5px; font-size:25px; margin:0; line-height:1; }
+  .sub { font-size:12.5px; color:#9fb0c0; margin-top:3px; }
+  .header-right { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .auth-box { display:flex; align-items:center; gap:10px; font-size:12.5px; color:#9fb0c0; }
+  .auth-box .who { color:#f5f2ec; font-weight:500; }
+  .auth-btn { background:rgba(255,255,255,.08); color:#f5f2ec; border:none; height:34px; padding:0 13px; border-radius:7px; cursor:pointer; font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:.4px; text-transform:uppercase; transition:background .12s; }
+  .auth-btn:hover { background:rgba(255,255,255,.18); }
+  .date-nav { display:flex; align-items:center; gap:4px; }
+  .date-nav button { background:rgba(255,255,255,.08); color:#f5f2ec; border:none; width:34px; height:38px; border-radius:7px; cursor:pointer; font-size:18px; display:grid; place-items:center; transition:background .12s; }
+  .date-nav button:hover { background:rgba(255,255,255,.18); }
+  .date-nav input { background:rgba(255,255,255,.08); color:#f5f2ec; border:none; height:38px; border-radius:7px; padding:0 10px; font-family:'Oswald',sans-serif; font-size:15px; letter-spacing:.3px; color-scheme:dark; }
+  .date-nav .today-btn { width:auto; padding:0 12px; font-family:'Oswald',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:.5px; }
+  .tabs { display:flex; gap:6px; margin:24px 0 18px; }
+  .tab { background:transparent; border:1px solid var(--line); color:var(--ink-soft); padding:8px 16px; border-radius:8px; cursor:pointer; font-family:'Oswald',sans-serif; font-size:13.5px; letter-spacing:.5px; text-transform:uppercase; transition:all .12s; }
+  .tab:hover { border-color:var(--ink-soft); }
+  .tab.active { background:var(--mat); color:#f5f2ec; border-color:var(--mat); }
+  .viewbadge { margin-left:auto; align-self:center; font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .viewbadge .lockico { width:13px; height:13px; }
+  .scoreboard { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:0 0 22px; }
+  .score { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; box-shadow:var(--shadow); }
+  .score .n { font-family:'Oswald',sans-serif; font-size:30px; font-weight:600; line-height:1; }
+  .score .l { font-size:11.5px; color:var(--ink-soft); margin-top:5px; text-transform:uppercase; letter-spacing:.6px; }
+  .score.present .n { color:var(--present); } .score.absent .n { color:var(--absent); } .score.excused .n { color:var(--excused); }
+  .toolbar { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:12px; flex-wrap:wrap; }
+  .toolbar h2 { font-family:'Oswald',sans-serif; font-size:19px; font-weight:600; margin:0; letter-spacing:.4px; }
+  .toolbar .hint { font-size:12.5px; color:var(--ink-soft); }
+  .btn-row { display:flex; gap:8px; }
+  .add-btn, .ghost-btn { border-radius:8px; padding:9px 15px; font-family:'Oswald',sans-serif; font-size:13.5px; font-weight:500; letter-spacing:.5px; text-transform:uppercase; cursor:pointer; transition:background .12s,border-color .12s; }
+  .add-btn { background:var(--singlet); color:#fff; border:none; }
+  .add-btn:hover { background:var(--singlet-deep); }
+  .add-btn:disabled { background:var(--line); color:var(--ink-soft); cursor:not-allowed; }
+  .ghost-btn { background:transparent; border:1px solid var(--line); color:var(--ink); }
+  .ghost-btn:hover { border-color:var(--ink-soft); }
+  .roster { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:var(--shadow); }
+  .row { display:grid; grid-template-columns:1fr 190px 165px 34px; align-items:center; gap:14px; padding:11px 16px; border-bottom:1px solid var(--line); }
+  .row:last-child { border-bottom:none; }
+  .row.head { background:color-mix(in srgb,var(--mat) 5%,var(--card)); font-size:11px; text-transform:uppercase; letter-spacing:.7px; color:var(--ink-soft); padding-top:9px; padding-bottom:9px; font-weight:600; }
+  .wrestler { display:flex; align-items:center; gap:11px; min-width:0; }
+  .wrestler.clickable { cursor:pointer; border-radius:8px; margin:-4px -6px; padding:4px 6px; transition:background .1s; }
+  .wrestler.clickable:hover { background:color-mix(in srgb,var(--mat) 6%,var(--card)); }
+  .avatar { width:32px; height:32px; flex:none; border-radius:50%; display:grid; place-items:center; font-family:'Oswald',sans-serif; font-weight:600; font-size:13px; color:#fff; letter-spacing:.3px; }
+  .wname { font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wname .chev { color:var(--ink-soft); font-weight:400; margin-left:5px; opacity:0; transition:opacity .1s; }
+  .wrestler.clickable:hover .wname .chev { opacity:.6; }
+  .wclass { font-size:11.5px; color:var(--ink-soft); }
+  .status-group { display:flex; gap:5px; }
+  .status-group button { flex:1; border:1px solid var(--line); background:transparent; color:var(--ink-soft); padding:6px 0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600; font-family:'Oswald',sans-serif; letter-spacing:.4px; transition:all .1s; }
+  .status-group button:hover { border-color:var(--ink-soft); }
+  .status-group button[data-on="present"] { background:var(--present); border-color:var(--present); color:#fff; }
+  .status-group button[data-on="absent"] { background:var(--absent); border-color:var(--absent); color:#fff; }
+  .status-group button[data-on="excused"] { background:var(--excused); border-color:var(--excused); color:#fff; }
+  .status-group button:disabled { cursor:default; opacity:.9; }
+  .status-group.ro button:not([data-on]) { opacity:.35; }
+  .weigh-cell { display:flex; flex-direction:column; align-items:stretch; }
+  .weigh { display:flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:7px; padding:4px 9px; background:transparent; transition:opacity .15s,border-color .12s; }
+  .weigh:focus-within { border-color:var(--singlet); }
+  .weigh input { width:100%; border:none; background:transparent; color:var(--ink); font-size:14px; font-family:'Oswald',sans-serif; font-weight:500; text-align:right; outline:none; -moz-appearance:textfield; }
+  .weigh input::-webkit-outer-spin-button, .weigh input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .weigh input:disabled { color:var(--ink); }
+  .weigh .u { font-size:11.5px; color:var(--ink-soft); flex:none; }
+  .weigh.locked { opacity:.4; }
+  .weigh.locked input { pointer-events:none; }
+  .delta { font-size:11px; font-family:'Oswald',sans-serif; margin-top:3px; text-align:right; height:14px; color:var(--ink-soft); letter-spacing:.3px; }
+  .delta.up { color:var(--absent); } .delta.down { color:var(--present); }
+  .del { background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:16px; opacity:.4; transition:opacity .1s,color .1s; border-radius:6px; height:30px; }
+  .del:hover { opacity:1; color:var(--absent); }
+  .del.hidden { display:none; }
+  .empty { padding:46px 20px; text-align:center; color:var(--ink-soft); }
+  .empty svg { width:38px; height:38px; opacity:.35; margin-bottom:10px; }
+  .empty p { margin:0 0 4px; font-size:14px; }
+  .week-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:12px; flex-wrap:wrap; }
+  .week-nav .rangelabel { font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:.4px; }
+  .week-table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:var(--shadow); }
+  .week-table th, .week-table td { padding:10px 12px; text-align:center; font-size:13px; border-bottom:1px solid var(--line); }
+  .week-table th { background:color-mix(in srgb,var(--mat) 5%,var(--card)); font-family:'Oswald',sans-serif; font-weight:500; letter-spacing:.4px; text-transform:uppercase; font-size:11px; color:var(--ink-soft); }
+  .week-table td.name { text-align:left; font-weight:600; }
+  .week-table td.name.clickable { cursor:pointer; }
+  .week-table td.name.clickable:hover { color:var(--singlet); }
+  .week-table td.name .sub2 { font-weight:400; font-size:11px; color:var(--ink-soft); }
+  .week-table tr:last-child td { border-bottom:none; }
+  .cell-p { color:var(--present); font-weight:600; } .cell-a { color:var(--absent); font-weight:600; } .cell-e { color:var(--excused); font-weight:600; } .cell-x { color:var(--ink-soft); opacity:.5; }
+  .cell-w { font-family:'Oswald',sans-serif; font-size:12px; }
+  .rate { font-family:'Oswald',sans-serif; font-weight:600; }
+  .week-table .totcol { background:color-mix(in srgb,var(--mat) 4%,var(--card)); }
+  .foot { margin-top:22px; font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:8px; }
+  .dot { width:7px; height:7px; border-radius:50%; background:var(--present); flex:none; }
+  .dot.off { background:var(--absent); } .dot.warn { background:var(--whistle); }
+  .scrim { position:fixed; inset:0; background:rgba(10,15,20,.55); display:none; place-items:center; padding:20px; z-index:50; }
+  .scrim.open { display:grid; }
+  .modal { background:var(--card); border-radius:14px; width:100%; max-width:380px; padding:24px; box-shadow:0 18px 50px rgba(0,0,0,.3); }
+  .modal h3 { font-family:'Oswald',sans-serif; font-size:19px; margin:0 0 6px; letter-spacing:.4px; }
+  .modal .msub { font-size:12.5px; color:var(--ink-soft); margin:0 0 18px; }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); margin-bottom:5px; font-weight:600; }
+  .field input, .field select { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--canvas); color:var(--ink); font-size:14.5px; font-family:'Inter',sans-serif; outline:none; }
+  .field input:focus, .field select:focus { border-color:var(--singlet); }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; }
+  .modal-actions button { flex:1; padding:11px; border-radius:8px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:.4px; cursor:pointer; border:none; }
+  .btn-cancel { background:transparent; border:1px solid var(--line); color:var(--ink); }
+  .btn-save { background:var(--singlet); color:#fff; }
+  .btn-save:hover { background:var(--singlet-deep); }
+  .modal .err { color:var(--absent); font-size:12.5px; margin-top:10px; min-height:16px; }
+  .banner { background:var(--whistle); color:#3a2a05; font-size:13px; padding:10px 16px; text-align:center; font-weight:500; display:none; }
+  .banner.show { display:block; }
+  .banner.err { background:var(--absent); color:#fff; }
+  .hidden { display:none !important; }
+  .setup { max-width:640px; margin:60px auto; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:32px; box-shadow:var(--shadow); }
+  .setup h2 { font-family:'Oswald',sans-serif; margin:0 0 12px; }
+  .setup p { font-size:14px; color:var(--ink-soft); }
+  .setup code { background:var(--canvas); padding:2px 6px; border-radius:5px; font-size:12.5px; }
+
+  /* ---- Profile modal ---- */
+  .profile-modal { max-width:560px; padding:0; overflow:hidden; max-height:90vh; display:flex; flex-direction:column; }
+  .profile-head { background:var(--mat); color:#f5f2ec; padding:22px 24px; display:flex; align-items:center; gap:15px; position:relative; }
+  .profile-head .pavatar { width:52px; height:52px; flex:none; border-radius:50%; display:grid; place-items:center; font-family:'Oswald',sans-serif; font-weight:600; font-size:20px; color:#fff; }
+  .profile-head .pname { font-family:'Oswald',sans-serif; font-size:23px; font-weight:600; line-height:1.1; letter-spacing:.3px; }
+  .profile-head .pclass { font-size:12.5px; color:#9fb0c0; margin-top:3px; }
+  .profile-close { position:absolute; top:14px; right:16px; background:rgba(255,255,255,.1); border:none; color:#f5f2ec; width:30px; height:30px; border-radius:7px; cursor:pointer; font-size:18px; line-height:1; }
+  .profile-close:hover { background:rgba(255,255,255,.2); }
+  .profile-body { padding:22px 24px; overflow-y:auto; }
+  .profile-loading { padding:40px; text-align:center; color:var(--ink-soft); font-size:14px; }
+  .pstats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+  .pstat { background:var(--canvas); border:1px solid var(--line); border-radius:9px; padding:11px 12px; }
+  .pstat .pn { font-family:'Oswald',sans-serif; font-size:21px; font-weight:600; line-height:1; }
+  .pstat .pl { font-size:10.5px; color:var(--ink-soft); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+  .pstat.p .pn { color:var(--present); } .pstat.a .pn { color:var(--absent); } .pstat.e .pn { color:var(--excused); }
+  .psection-title { font-family:'Oswald',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); margin:0 0 10px; font-weight:600; }
+  .pchart { width:100%; height:120px; background:var(--canvas); border:1px solid var(--line); border-radius:9px; margin-bottom:6px; }
+  .pchart-empty { display:grid; place-items:center; height:120px; background:var(--canvas); border:1px solid var(--line); border-radius:9px; color:var(--ink-soft); font-size:12.5px; margin-bottom:6px; }
+  .pchart-cap { font-size:11px; color:var(--ink-soft); text-align:center; margin-bottom:20px; }
+  .whistory { max-height:150px; overflow-y:auto; border:1px solid var(--line); border-radius:9px; }
+  .whistory table { width:100%; border-collapse:collapse; font-size:13px; }
+  .whistory td { padding:7px 12px; border-bottom:1px solid var(--line); }
+  .whistory tr:last-child td { border-bottom:none; }
+  .whistory td.wd { color:var(--ink-soft); }
+  .whistory td.ww { text-align:right; font-family:'Oswald',sans-serif; }
+  .whistory td.wc2 { text-align:right; font-family:'Oswald',sans-serif; font-size:11.5px; width:70px; }
+  .wc2.up { color:var(--absent); } .wc2.down { color:var(--present); }
+  .pedit { background:var(--canvas); border:1px solid var(--line); border-radius:9px; padding:15px 16px; margin-bottom:18px; }
+  .pedit-row { display:flex; gap:10px; align-items:flex-end; }
+  .pedit-row .field { flex:1; margin-bottom:0; }
+  .pedit .save-cls { padding:10px 16px; border-radius:8px; border:none; background:var(--singlet); color:#fff; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.4px; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
+  .pedit .save-cls:hover { background:var(--singlet-deep); }
+  .pedit .save-cls:disabled { background:var(--line); color:var(--ink-soft); cursor:not-allowed; }
+  .pedit .savedtag { font-size:12px; color:var(--present); font-weight:600; margin-left:4px; opacity:0; transition:opacity .2s; }
+  .pedit .savedtag.show { opacity:1; }
+
+  /* ---- Sign-in gate ---- */
+  .gate { min-height:calc(100vh - 140px); display:flex; align-items:center; justify-content:center; padding:32px 18px; }
+  .gate-card { background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); max-width:400px; width:100%; padding:30px 26px; text-align:center; }
+  .gate-card .lockico { width:30px; height:30px; color:var(--singlet); margin-bottom:10px; }
+  .gate-card h2 { font-family:'Oswald',sans-serif; font-size:22px; letter-spacing:.5px; margin:0 0 8px; }
+  .gate-card p { color:var(--ink-soft); font-size:14px; line-height:1.5; margin:0 0 20px; }
+  .gate-card .who { font-weight:600; color:var(--ink); word-break:break-all; }
+  .gate-btn { border:none; background:var(--singlet); color:#fff; padding:12px 22px; border-radius:9px; font-family:'Oswald',sans-serif; font-size:15px; letter-spacing:.5px; text-transform:uppercase; cursor:pointer; }
+  .gate-btn:hover { background:var(--singlet-deep); }
+  .gate-btn.alt { background:transparent; color:var(--ink); border:1px solid var(--line); }
+
+  /* ---- Practice-day tag (Daily) ---- */
+  .daytag { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-soft); margin:4px 0 2px; min-height:20px; }
+  .daytag .pill { display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--ink); }
+  .daytag .pill::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--present); }
+  .daytag.off .pill::before { background:var(--ink-soft); opacity:.55; }
+  .linkbtn { background:none; border:none; padding:0; color:var(--singlet); font:inherit; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+  .linkbtn:hover { color:var(--singlet-deep); }
+  .tab-actions { margin-left:auto; align-self:center; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .tab-actions .ghost-btn { padding:7px 13px; }
+
+  /* ---- Missing weigh-in reminder ---- */
+  .weigh.missing { border-color:var(--flag); box-shadow:0 0 0 2px color-mix(in srgb,var(--flag) 22%,transparent); }
+  .delta.missing { color:var(--flag); }
+  .missbar { background:var(--flag-bg); color:var(--flag); border-radius:9px; padding:10px 14px; font-size:13px; font-weight:500; margin:0 0 12px; }
+
+  /* ---- Profile details ---- */
+  .pdetails { display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; color:var(--ink-soft); margin:-4px 0 16px; }
+  .pdetails b { color:var(--ink); font-weight:600; }
+  .pdetails a { color:var(--singlet); }
+  .pedit details summary { cursor:pointer; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.4px; text-transform:uppercase; color:var(--singlet); list-style-position:inside; }
+  .pgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .pgrid .field { margin-bottom:0; } .pgrid .full { grid-column:1 / -1; }
+  .pedit-actions { display:flex; align-items:center; gap:10px; margin-top:12px; }
+
+  /* ---- Wrestler Mode (kiosk) ---- */
+  .kiosk { position:fixed; inset:0; z-index:900; background:var(--canvas); display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  .k-top { background:var(--mat); color:#f5f2ec; border-bottom:3px solid var(--singlet); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+  .k-brand { display:flex; align-items:center; gap:12px; min-width:0; }
+  .k-brand img { height:42px; width:auto; }
+  .k-title { font-family:'Oswald',sans-serif; font-size:22px; letter-spacing:.6px; text-transform:uppercase; line-height:1.1; }
+  .k-date { font-size:13px; opacity:.75; }
+  .k-exit { background:transparent; border:1px solid rgba(245,242,236,.35); color:#f5f2ec; border-radius:8px; padding:8px 14px; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.4px; text-transform:uppercase; cursor:pointer; }
+  .k-body { flex:1; overflow-y:auto; padding:20px; max-width:1100px; width:100%; margin:0 auto; box-sizing:border-box; }
+  .k-note { background:var(--flag-bg); color:var(--flag); border-radius:9px; padding:10px 14px; font-size:13.5px; margin-bottom:14px; }
+  .k-search { width:100%; box-sizing:border-box; font-size:17px; padding:13px 16px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--ink); outline:none; margin-bottom:14px; font-family:'Inter',sans-serif; }
+  .k-search:focus { border-color:var(--singlet); }
+  .k-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px; }
+  .k-name-btn { display:flex; align-items:center; gap:11px; min-height:64px; padding:10px 14px; border-radius:11px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; text-align:left; font-size:15.5px; font-weight:600; font-family:'Inter',sans-serif; box-shadow:var(--shadow); }
+  .k-name-btn:active { transform:scale(.98); }
+  .k-name-btn .avatar { flex:none; }
+  .k-name-btn .kn { flex:1; min-width:0; }
+  .k-name-btn .ks { display:block; font-size:12px; font-weight:500; color:var(--ink-soft); margin-top:2px; }
+  .k-name-btn.done { border-color:var(--present); background:color-mix(in srgb,var(--present) 9%,var(--card)); }
+  .k-name-btn.done .ks { color:var(--present); font-weight:600; }
+  .k-count { text-align:center; color:var(--ink-soft); font-size:13px; margin:18px 0 6px; }
+  .k-empty { color:var(--ink-soft); text-align:center; padding:30px 0; }
+  .k-sheet { position:fixed; inset:0; z-index:950; background:rgba(10,14,18,.6); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .k-sheet.top { z-index:1100; }
+  .k-card { background:var(--card); color:var(--ink); border-radius:16px; width:100%; max-width:400px; padding:26px 24px; text-align:center; box-shadow:0 18px 50px rgba(0,0,0,.35); }
+  .k-card .kc-name { font-family:'Oswald',sans-serif; font-size:26px; letter-spacing:.4px; margin-bottom:4px; }
+  .k-card .kc-sub { color:var(--ink-soft); font-size:14px; margin-bottom:18px; line-height:1.45; }
+  .k-wt { display:flex; align-items:center; justify-content:center; gap:8px; border:2px solid var(--line); border-radius:12px; padding:8px 16px; margin:0 auto; max-width:240px; }
+  .k-wt:focus-within { border-color:var(--singlet); }
+  .k-wt input { width:100%; border:none; background:transparent; color:var(--ink); font-family:'Oswald',sans-serif; font-size:40px; font-weight:600; text-align:center; outline:none; -moz-appearance:textfield; }
+  .k-wt input::-webkit-outer-spin-button, .k-wt input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .k-wt span { font-family:'Oswald',sans-serif; font-size:18px; color:var(--ink-soft); }
+  .k-err { color:var(--absent); font-size:13px; font-weight:500; min-height:19px; margin-top:10px; }
+  .k-actions { display:flex; gap:10px; margin-top:12px; }
+  .k-actions button, .k-plain { flex:1; padding:14px; border-radius:10px; font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:.5px; text-transform:uppercase; cursor:pointer; }
+  .k-actions .k-go { border:none; background:var(--singlet); color:#fff; } .k-actions .k-go:disabled { opacity:.6; }
+  .k-actions .k-back, .k-plain { border:1px solid var(--line); background:transparent; color:var(--ink); }
+  .k-done .kd-check { width:66px; height:66px; border-radius:50%; background:var(--present); color:#fff; font-size:36px; line-height:66px; margin:0 auto 12px; }
+  .pin-dots { display:flex; gap:14px; justify-content:center; margin:4px 0 18px; }
+  .pin-dots i { width:15px; height:15px; border-radius:50%; border:2px solid var(--ink-soft); }
+  .pin-dots i.on { background:var(--ink); border-color:var(--ink); }
+  .pin-dots.shake { animation:shake .35s; }
+  @keyframes shake { 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  .pinpad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:270px; margin:0 auto; }
+  .pinpad button { height:58px; border-radius:12px; border:1px solid var(--line); background:var(--canvas); color:var(--ink); font-family:'Oswald',sans-serif; font-size:22px; cursor:pointer; }
+  .pinpad button:active { background:var(--line); }
+  .pinpad .blank { visibility:hidden; }
+  @media (max-width:720px){ .pgrid { grid-template-columns:1fr; } .k-grid { grid-template-columns:1fr 1fr; } .k-title { font-size:18px; } .k-brand img { height:34px; } }
+
+  /* ---- Absence reason (Daily) ---- */
+  .status-cell { display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .note-in { width:100%; border:1px dashed var(--line); background:transparent; color:var(--ink); border-radius:7px; padding:5px 9px; font-size:12.5px; font-family:'Inter',sans-serif; outline:none; }
+  .note-in:focus { border-style:solid; border-color:var(--excused); }
+  .note-in::placeholder { color:var(--ink-soft); }
+
+  /* ---- Weight vs class + flags ---- */
+  .tgt.over { color:var(--ink); font-weight:500; } .tgt.ok { color:var(--present); font-weight:500; }
+  .wmgmt { background:var(--canvas); border:1px solid var(--line); border-radius:9px; padding:13px 15px; margin-bottom:20px; font-size:13.5px; }
+  .wmgmt .wm-line b { font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:.3px; }
+  .wm-note { margin-top:9px; font-size:11.5px; color:var(--ink-soft); }
+  .wm-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .wm-stats .pn { font-family:'Oswald',sans-serif; font-size:21px; font-weight:600; line-height:1; }
+  .wm-stats .pl { font-size:10.5px; color:var(--ink-soft); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+  .tgt.below, .mn.below { color:var(--absent); font-weight:600; }
+  .mn.above { color:var(--ink-soft); }
+
+  /* ---- Hydration test ---- */
+  .hydro { background:var(--canvas); border:1px solid var(--line); border-radius:9px; padding:13px 15px; margin-bottom:20px; font-size:13.5px; }
+  .hydro .hline { margin-top:9px; }
+  .hydro .pass { color:var(--present); font-weight:600; } .hydro .fail { color:var(--absent); font-weight:600; }
+  .hydro .hbad { margin-top:9px; background:color-mix(in srgb,var(--absent) 10%,var(--card)); color:var(--absent); border-radius:7px; padding:8px 11px; font-size:12.5px; font-weight:500; }
+  .hydro details { margin-top:12px; border-top:1px solid var(--line); padding-top:10px; }
+  .hydro summary { cursor:pointer; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.4px; text-transform:uppercase; color:var(--singlet); }
+  .hgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .hgrid .field { margin-bottom:0; }
+  .hgrid .full { grid-column:1 / -1; }
+  .hgrid .fhint { font-size:11px; color:var(--ink-soft); margin-top:3px; }
+  .hcalc { margin-top:10px; font-size:12.5px; color:var(--ink-soft); min-height:18px; }
+  .hactions { display:flex; gap:8px; margin-top:12px; align-items:center; }
+  .hactions button { padding:9px 15px; border-radius:8px; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.4px; text-transform:uppercase; cursor:pointer; }
+  .hactions .hsave { border:none; background:var(--singlet); color:#fff; } .hactions .hsave:hover { background:var(--singlet-deep); }
+  .hactions .hclear { border:1px solid var(--line); background:transparent; color:var(--ink); }
+  .whistory td.wr { color:var(--ink-soft); font-size:12.5px; }
+  .whistory td.wt { font-family:'Oswald',sans-serif; font-size:12px; width:70px; }
+
+  /* ---- Weekly grid additions ---- */
+  .week-table th .thsub { display:block; font-family:'Inter',sans-serif; font-size:10px; text-transform:none; letter-spacing:0; font-weight:500; }
+  .week-table th .thsub.warn { color:var(--flag); }
+  .week-table th.offday, .week-table td.offday { opacity:.55; }
+  .week-table td[title] { cursor:help; }
+  .rate-cap { font-size:11.5px; color:var(--ink-soft); margin-top:10px; }
+
+  /* ---- Schedule modal ---- */
+  .sched-modal { max-width:430px; max-height:90vh; overflow-y:auto; }
+  .dow-group { display:flex; gap:5px; }
+  .dow-group button { flex:1; border:1px solid var(--line); background:transparent; color:var(--ink-soft); padding:8px 0; border-radius:7px; cursor:pointer; font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:.3px; }
+  .dow-group button[aria-pressed="true"] { background:var(--mat); border-color:var(--mat); color:#f5f2ec; }
+  :root[data-theme="dark"] .dow-group button[aria-pressed="true"] { background:var(--singlet); border-color:var(--singlet); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .dow-group button[aria-pressed="true"] { background:var(--singlet); border-color:var(--singlet); } }
+  .ovlist { border:1px solid var(--line); border-radius:8px; max-height:170px; overflow-y:auto; }
+  .ovrow { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 10px; border-bottom:1px solid var(--line); font-size:13px; }
+  .ovrow:last-child { border-bottom:none; }
+  .ovrow .ovk { font-size:11.5px; font-weight:600; }
+  .ovrow .ovk.add { color:var(--present); } .ovrow .ovk.cancel { color:var(--absent); }
+  .ovempty { padding:12px; font-size:12.5px; color:var(--ink-soft); }
+
+  @media (max-width:720px) {
+    .scoreboard { grid-template-columns:repeat(2,1fr); }
+    .row { grid-template-columns:1fr; gap:10px; padding:14px 14px; }
+    .row.head { display:none; }
+    .status-group button { padding:8px 0; }
+    .weigh-cell { flex-direction:row; align-items:center; gap:10px; flex-wrap:wrap; }
+    .hgrid { grid-template-columns:1fr; }
+    .weigh { flex:1; }
+    .delta { margin-top:0; white-space:nowrap; }
+    .del { justify-self:end; width:40px; }
+    .week-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .pstats { grid-template-columns:repeat(3,1fr); gap:7px; }
+    .pedit-row { flex-direction:column; align-items:stretch; }
+    .pedit .save-cls { width:100%; }
+  }
+</style>
+</head>
+<body>
+<div class="banner" id="banner"></div>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="mark logo">
+  		 <img src="LOGAN.png" alt="Logan Grizzlies logo">
+	  </div>
+      <div><h1>MAT ROOM</h1><div class="sub">Practice attendance &amp; weigh-in</div></div>
+    </div>
+    <div class="header-right">
+      <div class="auth-box" id="authBox"></div>
+      <div class="date-nav hidden" id="dateNav">
+        <button id="prevDay" title="Previous day">‹</button>
+        <input type="date" id="dateInput">
+        <button id="nextDay" title="Next day">›</button>
+        <button class="today-btn" id="todayBtn">Today</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="gate" id="gate">
+  <div class="gate-card" id="gateCard"><p>Checking sign-in…</p></div>
+</div>
+
+<div id="app" class="hidden">
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab active" id="tabDay">Daily</button>
+    <button class="tab" id="tabWeek">Weekly Summary</button>
+    <div class="viewbadge hidden" id="viewBadge">
+      <svg class="lockico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      View only — sign in to edit
+    </div>
+    <div class="tab-actions">
+      <button class="ghost-btn hidden" id="kioskBtn">Wrestler Mode</button>
+      <button class="ghost-btn hidden" id="schedBtn">Schedule</button>
+    </div>
+  </div>
+
+  <div id="dailyView">
+    <div class="scoreboard">
+      <div class="score present"><div class="n" id="cPresent">0</div><div class="l">Present</div></div>
+      <div class="score absent"><div class="n" id="cAbsent">0</div><div class="l">Absent</div></div>
+      <div class="score excused"><div class="n" id="cExcused">0</div><div class="l">Excused</div></div>
+      <div class="score"><div class="n" id="cWeigh">0</div><div class="l">Weighed In</div></div>
+    </div>
+    <div class="toolbar">
+      <div>
+        <h2 id="dayTitle">Practice Roster</h2>
+        <div class="daytag" id="dayTag"></div>
+        <div class="hint">Tap a status, then enter weigh-in. Tap a name to open their profile.</div>
+      </div>
+      <div class="btn-row">
+        <button class="ghost-btn" id="exportDay">Export CSV</button>
+        <button class="add-btn" id="addBtn">+ Add Wrestler</button>
+      </div>
+    </div>
+    <div class="missbar hidden" id="missBar"></div>
+    <div class="roster" id="roster"></div>
+  </div>
+
+  <div id="weekView" class="hidden">
+    <div class="week-nav">
+      <div class="btn-row">
+        <button class="ghost-btn" id="prevWeek">‹ Prev</button>
+        <button class="ghost-btn" id="thisWeek">This Week</button>
+        <button class="ghost-btn" id="nextWeek">Next ›</button>
+      </div>
+      <div class="rangelabel" id="weekRange">—</div>
+      <button class="ghost-btn" id="exportWeek">Export CSV</button>
+    </div>
+    <div class="week-scroll"><table class="week-table" id="weekTable"></table></div>
+    <div class="rate-cap">Att. Rate counts scheduled practices where attendance was taken. Unmarked counts as missed; excused doesn’t count against a wrestler.</div>
+  </div>
+
+  <div class="foot"><span class="dot" id="syncDot"></span><span id="syncText">Connecting…</span></div>
+</div>
+</div>
+
+<div id="setup" class="hidden">
+  <div class="setup">
+    <h2>Almost there — add your Firebase keys</h2>
+    <p>This file isn't connected to a database yet. Open it in a text editor, find the <code>firebaseConfig</code> block near the top of the script, and paste in the config from your Firebase project (Project settings → Your apps → Web app). Then re-upload it to your host.</p>
+    <p>Full step-by-step instructions are in the setup guide that came with this file.</p>
+  </div>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="modal">
+    <h3>Add Wrestler</h3>
+    <div class="field"><label for="fName">Name</label><input id="fName" type="text" placeholder="e.g. Jordan Ruiz" autocomplete="off"></div>
+    <div class="field"><label for="fClass">Weight Class <span style="text-transform:none;font-weight:400">(optional)</span></label><input id="fClass" type="text" placeholder="e.g. 138" autocomplete="off"></div>
+    <div class="modal-actions"><button class="btn-cancel" id="cancelAdd">Cancel</button><button class="btn-save" id="saveAdd">Add to Team</button></div>
+  </div>
+</div>
+
+<div class="scrim" id="schedScrim">
+  <div class="modal sched-modal">
+    <h3>Practice schedule</h3>
+    <p class="msub">Attendance rates count only these days. To cancel or add a single date, use the link under the date on the Daily tab.</p>
+    <div class="field"><label>Regular practice days</label><div class="dow-group" id="dowGroup"></div></div>
+    <div class="field"><label for="seasonStart">Season start</label><input type="date" id="seasonStart"></div>
+    <div class="field"><label>One-off changes</label><div class="ovlist" id="ovList"></div></div>
+    <div class="field"><label>Wrestler Mode PIN</label><div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--ink-soft)"><span id="pinState">Not set</span><button class="linkbtn" id="pinChange">Set PIN</button></div></div>
+    <div class="modal-actions"><button class="btn-cancel" id="schedCancel">Close</button><button class="btn-save" id="schedSave">Save schedule</button></div>
+  </div>
+</div>
+
+<datalist id="reasonList"></datalist>
+
+<!-- Wrestler Mode (kiosk) -->
+<div class="kiosk hidden" id="kiosk">
+  <div class="k-top">
+    <div class="k-brand"><img src="LOGAN.png" alt=""><div><div class="k-title">Practice check-in</div><div class="k-date" id="kDate"></div></div></div>
+    <button class="k-exit" id="kExit">Coach</button>
+  </div>
+  <div class="k-body">
+    <div class="k-note hidden" id="kNote"></div>
+    <input class="k-search" id="kSearch" type="search" placeholder="Find your name" autocomplete="off" aria-label="Find your name">
+    <div class="k-grid" id="kGrid"></div>
+    <div class="k-count" id="kCount"></div>
+  </div>
+</div>
+<div class="k-sheet hidden" id="kSheet">
+  <div class="k-card">
+    <div class="kc-name" id="kName"></div>
+    <div class="kc-sub" id="kSub">Step on the scale and enter your weight.</div>
+    <div class="k-wt"><input id="kWeight" type="number" inputmode="decimal" step="0.1" placeholder="000.0" aria-label="Your weight"><span>lb</span></div>
+    <div class="k-err" id="kErr"></div>
+    <div class="k-actions"><button class="k-back" id="kCancel">Back</button><button class="k-go" id="kSubmit">Check in</button></div>
+  </div>
+</div>
+<div class="k-sheet hidden" id="kDone">
+  <div class="k-card k-done"><div class="kd-check">✓</div><div class="kc-name" id="kDoneName"></div><div class="kc-sub" id="kDoneSub" style="margin-bottom:0"></div></div>
+</div>
+<div class="k-sheet top hidden" id="pinSheet">
+  <div class="k-card">
+    <div class="kc-name" id="pinTitle">Coach PIN</div>
+    <div class="kc-sub" id="pinSub"></div>
+    <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+    <div class="pinpad" id="pinPad"></div>
+    <div class="k-err" id="pinErr"></div>
+    <button class="k-plain" id="pinCancel" style="width:100%;margin-top:6px">Cancel</button>
+  </div>
+</div>
+
+<div class="scrim" id="profileScrim">
+  <div class="modal profile-modal">
+    <div class="profile-head">
+      <div class="pavatar" id="pAvatar"></div>
+      <div><div class="pname" id="pName"></div><div class="pclass" id="pClass"></div></div>
+      <button class="profile-close" id="profileClose">×</button>
+    </div>
+    <div class="profile-body" id="profileBody"></div>
+  </div>
+</div>
+
+
+<!-- Firebase SDK (modular, loaded as ES module) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ============================================================
+   PASTE YOUR FIREBASE CONFIG HERE
+   Firebase console → Project settings (gear icon) → scroll to
+   "Your apps" → Web app → "Config". Copy the object and replace
+   the placeholder values below.
+   ============================================================ */
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBas00F70VFmez6mihDbtqyU1XHL43TwT4",
+  authDomain: "mat-room-beta.firebaseapp.com",
+  projectId: "mat-room-beta",
+  storageBucket: "mat-room-beta.firebasestorage.app",
+  messagingSenderId: "975845942606",
+  appId: "1:975845942606:web:7a306a40e78f37f9ecea1f"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+/* ============================================================
+   COACH EMAILS — must match the list in firestore.rules.
+   These Google accounts get the edit controls. This list is only
+   for showing/hiding buttons; the REAL enforcement is in your
+   Firestore rules. Keep the two lists the same. Lowercase.
+   ============================================================ */
+const COACH_EMAILS = [
+  "angarcia1001@gmail.com",
+  "perryrpadilla@gmail.com",
+  "rocky.lunceford@loganschools.org"
+];
+/* ============================================================ */
+
+/* ============================================================
+   STANDARD WEIGHT CLASSES — offered in the weight-class picker.
+   Edit this list to match your league if needed. Coaches can
+   also type a custom value instead of picking one.
+   ============================================================ */
+const WEIGHT_CLASSES = ["106","113","120","126","132","138","144","150","157","165","175","190","215","285"];
+/* ============================================================ */
+
+/* ============================================================
+   HYDRATION / MINIMUM WEIGHT
+   HYDRATION_PASS_USG: urine specific gravity at or below this passes
+   (NFHS standard is 1.025; some states use 1.020).
+   MIN_BODY_FAT: lowest allowable body fat % used to calculate
+   minimum weight (NFHS: 7% boys, 12% girls).
+   ============================================================ */
+const HYDRATION_PASS_USG = 1.025;
+const MIN_BODY_FAT = { boys: 7, girls: 12 };
+
+/* Quick-pick suggestions for absence reasons (coaches can type anything). */
+const ABSENCE_REASONS = ["Sick","Injury","Family","Appointment","School / academic","College visit","Unknown"];
+/* ============================================================ */
+
+const NOT_CONFIGURED = firebaseConfig.apiKey === "PASTE_API_KEY";
+
+const $ = s => document.querySelector(s);
+if (NOT_CONFIGURED) {
+  $('#app').classList.add('hidden');
+  $('#setup').classList.remove('hidden');
+} else {
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const fdb = getFirestore(app);
+  startApp(auth, fdb, { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }, COACH_EMAILS, WEIGHT_CLASSES);
+}
+
+function startApp(auth, fdb, fb, coachEmails, weightClasses){
+  const COACHES = (coachEmails||[]).map(e=>e.toLowerCase());
+  const WCLASSES = weightClasses||[];
+  const AVCOLORS = ['#b3122b','#2f9e6b','#2d6cb3','#8a3fb0','#c77d18','#127d7a','#a02c5c','#4a5f2b'];
+  const STATUSES = ['present','absent','excused'];
+  const SEASON_SCAN_DAYS = 220; // how far back a profile scans for stats (a full season)
+
+  let roster=[], attendance={}, selDate=todayStr(), view='day';
+  let weekStart=mondayOf(todayStr());
+  let unsubRoster=null, unsubAtt=null, unsubWeek=null, unsubSettings=null;
+  let weekData={}, prevWeights={}, editing=new Set();
+  let canEdit=false, user=null;
+  let profileOpenId=null, profileToken=0;
+  // Practice schedule (settings/team). Defaults apply until the doc exists.
+  // practiceDays uses JS getDay() numbers: 0=Sun ... 6=Sat.
+  let schedule={practiceDays:[1,2,3,4,5], seasonStart:'', overrides:{}};
+  let schedDraft=null;
+  // Coach-only absence reasons: privateNotes/{wrestlerId} = { notes: { 'YYYY-MM-DD': 'Sick' } }
+  let notes={}, unsubNotes=null, noteTimers={};
+  let prevToken=0;
+  let kioskPinHash='', kioskOn=false, kSelId=null, kIdle=null, kDoneTimer=null, kDayTimer=null;
+  const KIOSK_KEY='matroom-kiosk';
+  let hydro={}; // coach-only hydration test per wrestler (privateNotes/{id}.hydration)
+
+  function todayStr(){ const d=new Date(); const off=d.getTimezoneOffset(); return new Date(d-off*60000).toISOString().slice(0,10); }
+  function initials(n){ return n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+  function colorFor(id){ let h=0; for(const c of id) h=(h*31+c.charCodeAt(0))>>>0; return AVCOLORS[h%AVCOLORS.length]; }
+  function parseLocal(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+  function fmtDate(dt){ const off=dt.getTimezoneOffset(); return new Date(dt-off*60000).toISOString().slice(0,10); }
+  function prettyDate(s){ return parseLocal(s).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}); }
+  function shortDate(s){ return parseLocal(s).toLocaleDateString(undefined,{weekday:'short',month:'numeric',day:'numeric'}); }
+  function medDate(s){ return parseLocal(s).toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
+  function mondayOf(s){ const dt=parseLocal(s); const day=(dt.getDay()+6)%7; dt.setDate(dt.getDate()-day); return fmtDate(dt); }
+  function addDays(s,n){ const dt=parseLocal(s); dt.setDate(dt.getDate()+n); return fmtDate(dt); }
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function daysBetween(a,b){ return Math.round((parseLocal(b)-parseLocal(a))/86400000); }
+  function createdStr(w){ return (w&&w.created)?fmtDate(new Date(w.created)):''; }
+  function validW(v){ return v!=null && !isNaN(v); }
+  function targetOf(w){ const t=parseFloat(w&&w.wclass); return isNaN(t)?null:t; }
+  function vsClass(w, cur){
+    const t=targetOf(w); if(t==null||!validW(cur)) return null;
+    const d=+(cur-t).toFixed(1);
+    if(d>0) return {cls:'over', txt:d+' over'};
+    if(d<0) return {cls:'ok', txt:Math.abs(d)+' under'};
+    return {cls:'ok', txt:'on weight'};
+  }
+  // ---- Hydration / minimum weight ----
+  const r1=v=>Math.round(v*10)/10;
+  function hydroSummary(h){
+    if(!h) return null;
+    const passed = validW(h.usg) ? h.usg<=HYDRATION_PASS_USG : null;
+    const minBF = validW(h.minBodyFat)?h.minBodyFat:MIN_BODY_FAT.boys;
+    let calc=null;
+    if(passed!==false && validW(h.testWeight) && validW(h.bodyFat)){
+      calc = h.bodyFat<=minBF ? h.testWeight : r1(h.testWeight*(1-h.bodyFat/100)/(1-minBF/100));
+    }
+    const min = validW(h.officialMin) ? h.officialMin : calc;
+    const nums=WCLASSES.map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+    const lowest = min!=null ? (nums.find(n=>n>=min) ?? null) : null;
+    return {passed, minBF, calc, min, lowest, official:validW(h.officialMin)};
+  }
+  function vsMin(w, cur){
+    const hs=hydroSummary(hydro[w&&w.id]); if(!hs||hs.min==null||!validW(cur)) return null;
+    const d=r1(cur-hs.min);
+    return d>=0 ? {cls:'above', txt:d+' above min'} : {cls:'below', txt:Math.abs(d)+' below min'};
+  }
+  // ---- Practice schedule ----
+  function isPractice(d){
+    const o=schedule.overrides[d];
+    if(o===true||o===false) return o;
+    return schedule.practiceDays.includes(parseLocal(d).getDay());
+  }
+  // Attendance rate for one wrestler over a set of days.
+  // Counts scheduled practice days (up to today, since season start / when they joined)
+  // on which attendance was taken for anyone. Excused days are left out; unmarked = missed.
+  function rateFor(w, days, dataByDay){
+    const today=todayStr(), cs=createdStr(w); let attended=0, counted=0, unmarked=0;
+    days.forEach(d=>{
+      if(d>today || !isPractice(d)) return;
+      if(cs && d<cs) return; if(schedule.seasonStart && d<schedule.seasonStart) return;
+      const day=dataByDay[d]||{}; if(!Object.values(day).some(x=>x&&x.status)) return;
+      const st=(day[w.id]||{}).status;
+      if(st==='excused') return;
+      counted++; if(st==='present') attended++; else if(!st) unmarked++;
+    });
+    return {attended, counted, unmarked, pct: counted?Math.round(attended/counted*100):null};
+  }
+  function banner(msg, isErr){ const b=$('#banner'); b.textContent=msg; b.className='banner show'+(isErr?' err':''); clearTimeout(banner._t); banner._t=setTimeout(()=>b.classList.remove('show'),5000); }
+
+  // ---- Firestore path helpers ----
+  const rosterCol = ()=> fb.collection(fdb,'roster');
+  const attCol = (d)=> fb.collection(fdb,'attendance',d,'wrestlers');
+  const attDoc = (d,wid)=> fb.doc(fdb,'attendance',d,'wrestlers',wid);
+  const settingsDoc = ()=> fb.doc(fdb,'settings','team');
+  const noteDoc = (wid)=> fb.doc(fdb,'privateNotes',wid);
+
+  // ---- Auth ----
+  // Coaches only: nothing is read from Firestore until a listed coach is signed in.
+  let started=false;
+  fb.onAuthStateChanged(auth, u=>{
+    user=u;
+    const email=(u&&u.email||'').toLowerCase();
+    const isCoach = !!u && COACHES.includes(email);
+    canEdit = isCoach;
+    renderAuthBox(isCoach);
+    if(!isCoach){ stop(); renderGate(); return; }
+    $('#gate').classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    $('#dateNav').classList.remove('hidden');
+    if(!started){ started=true; start(); }
+    $('#viewBadge').classList.add('hidden');
+    $('#addBtn').disabled = !canEdit;
+    $('#schedBtn').classList.toggle('hidden', !canEdit);
+    $('#kioskBtn').classList.toggle('hidden', !canEdit);
+    if(canEdit && !kioskOn && lsGet(KIOSK_KEY)==='1') enterKiosk(true);
+    watchNotes();
+    if(view==='day') renderDaily(); else renderWeek();
+    if(profileOpenId) renderProfile(profileOpenId); // refresh edit controls if open
+  });
+  const LOCK_SVG='<svg class="lockico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+  function renderGate(){
+    $('#app').classList.add('hidden'); $('#dateNav').classList.add('hidden'); $('#gate').classList.remove('hidden');
+    const c=$('#gateCard');
+    if(user){
+      c.innerHTML=`${LOCK_SVG}<h2>Not authorized</h2><p>You’re signed in as <span class="who">${escapeHtml(user.email)}</span>, which isn’t on the coach list. Ask a coach to add this email, or sign in with a different account.</p><button class="gate-btn alt" id="gateOut">Sign out</button>`;
+      $('#gateOut').onclick=()=>fb.signOut(auth);
+    } else {
+      c.innerHTML=`${LOCK_SVG}<h2>Coaches only</h2><p>Sign in with your coach Google account to view attendance and weigh-ins.</p><button class="gate-btn" id="gateIn">Coach sign in</button>`;
+      $('#gateIn').onclick=openLogin;
+    }
+  }
+  // Tear down every listener and wipe data from memory and the page.
+  function stop(){
+    if(!started) return;
+    started=false;
+    [unsubRoster, unsubAtt, unsubSettings, unsubNotes].forEach(u=>{ if(u) u(); });
+    unsubRoster=unsubAtt=unsubSettings=unsubNotes=null;
+    if(unsubWeek){ unsubWeek.forEach(u=>u()); unsubWeek=null; }
+    roster=[]; attendance={}; weekData={}; prevWeights={}; notes={}; hydro={};
+    if(profileOpenId) closeProfile();
+    hideKioskUI();
+    $('#schedScrim').classList.remove('open'); $('#scrim').classList.remove('open');
+    $('#roster').innerHTML=''; $('#weekTable').innerHTML='';
+    if(view!=='day') setView('day');
+  }
+  function renderAuthBox(isCoach){
+    const box=$('#authBox');
+    if(user && !isCoach){ box.innerHTML=''; return; }
+    if(user){
+      const tag = isCoach ? '' : ' (view only)';
+      box.innerHTML = `<span class="who">${escapeHtml(user.email)}${tag}</span><button class="auth-btn" id="signout">Sign out</button>`;
+      $('#signout').onclick=()=>fb.signOut(auth);
+    } else {
+      box.innerHTML = '';
+    }
+  }
+  async function openLogin(){
+    const provider = new fb.GoogleAuthProvider();
+    try{ await fb.signInWithPopup(auth, provider); }
+    catch(e){
+      if(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request') return;
+      if(e.code==='auth/unauthorized-domain') banner('This web address isn\u2019t authorized in Firebase yet (Authentication \u2192 Settings \u2192 Authorized domains).', true);
+      else banner('Sign-in failed: '+e.code, true);
+    }
+  }
+
+  // ---- Data subscriptions ----
+  function start(){
+    $('#syncText').textContent='Connected';
+    unsubRoster = fb.onSnapshot(rosterCol(), snap=>{
+      roster = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+      if(view==='day') renderDaily(); else renderWeek();
+      if(kioskOn) renderKiosk();
+      if(profileOpenId){ const w=roster.find(r=>r.id===profileOpenId); if(w) updateProfileHeader(w); }
+    }, err=>{ $('#syncDot').className='dot off'; $('#syncText').textContent='Sync error: '+err.code; });
+    unsubSettings = fb.onSnapshot(settingsDoc(), snap=>{
+      const d=snap.exists()?snap.data():{};
+      schedule={ practiceDays:Array.isArray(d.practiceDays)?d.practiceDays:[1,2,3,4,5], seasonStart:d.seasonStart||'', overrides:d.overrides||{} };
+      kioskPinHash=d.kioskPinHash||''; renderPinState();
+      if(kioskOn) renderKiosk();
+      renderDayTag(); if(view==='week') renderWeek();
+      if($('#schedScrim').classList.contains('open')) renderOverrides();
+    }, err=>{ console.warn('Schedule not readable — publish the updated Firestore rules (settings).', err.code); renderDayTag(); });
+    watchDate();
+  }
+  function watchNotes(){
+    if(unsubNotes){ unsubNotes(); unsubNotes=null; }
+    notes={}; hydro={};
+    if(!canEdit){ patchNotes(); updateDeltas(); return; }
+    unsubNotes = fb.onSnapshot(fb.collection(fdb,'privateNotes'), snap=>{
+      notes={}; hydro={};
+      snap.docs.forEach(d=>{ const x=d.data(); notes[d.id]=x.notes||{}; if(x.hydration) hydro[d.id]=x.hydration; });
+      patchNotes(); updateDeltas(); if(view==='week') renderWeek();
+    }, err=>{ banner('Absence reasons can\u2019t load yet. Publish the updated Firestore rules (privateNotes) in the Firebase console.', true); });
+  }
+  function watchDate(){
+    if(unsubAtt) unsubAtt();
+    unsubAtt=null; if(!started) return;
+    attendance={};
+    unsubAtt = fb.onSnapshot(attCol(selDate), snap=>{
+      attendance={}; snap.docs.forEach(d=>attendance[d.id]=d.data()); patchDaily(); if(kioskOn) renderKiosk();
+    }, ()=>{});
+    loadPrevWeights();
+  }
+  function loadPrevWeights(){
+    prevWeights={};
+    const myTok=++prevToken;
+    const dates=[]; for(let i=1;i<=30;i++) dates.push(addDays(selDate,-i));
+    const hist={}; let pending=dates.length;
+    dates.forEach(dstr=>{
+      fb.getDocs(attCol(dstr)).then(snap=>{
+        snap.docs.forEach(doc=>{ const w=doc.data().weight; if(validW(w)) (hist[doc.id]=hist[doc.id]||[]).push({date:dstr,weight:w}); });
+      }).catch(()=>{}).finally(()=>{ if(--pending===0 && myTok===prevToken){
+        const pw={}; Object.keys(hist).forEach(id=>{ hist[id].sort((a,b)=>a.date<b.date?-1:1); pw[id]=hist[id][hist[id].length-1]; });
+        prevWeights=pw; if(view==='day') updateDeltas();
+      } });
+    });
+  }
+
+  // ---- Writes (guarded by canEdit; Firestore rules enforce server-side) ----
+  function setStatus(wid,status){
+    if(!canEdit) return;
+    const cur=attendance[wid]||{}; const next=cur.status===status?{...cur,status:null}:{...cur,status};
+    attendance[wid]=next; updateRowStatus(wid); updateCounts();
+    fb.setDoc(attDoc(selDate,wid), next, {merge:false}).catch(()=>banner('Could not save — are you still signed in?',true));
+    if(next.status!=='absent' && next.status!=='excused' && (notes[wid]||{})[selDate]){
+      const ni=document.querySelector('.row[data-id="'+wid+'"] [data-note]'); if(ni) ni.value='';
+      setNote(wid,'',true);
+    }
+  }
+  function setNote(wid,val,now){
+    if(!canEdit) return;
+    const d=selDate, v=(val||'').trim();
+    notes[wid]={...(notes[wid]||{})}; if(v) notes[wid][d]=v; else delete notes[wid][d];
+    clearTimeout(noteTimers[wid]);
+    const write=()=>fb.setDoc(noteDoc(wid), {notes:{[d]: v?v:fb.deleteField()}}, {merge:true})
+      .catch(()=>banner('Could not save the absence reason. Check that the updated Firestore rules are published.',true));
+    if(now) write(); else noteTimers[wid]=setTimeout(write,600);
+  }
+  function setOverride(d,val){
+    if(!canEdit) return;
+    fb.setDoc(settingsDoc(), {overrides:{[d]: val===null?fb.deleteField():val}}, {merge:true})
+      .catch(()=>banner('Could not save the schedule. Check that the updated Firestore rules are published.',true));
+  }
+  let weightTimers={};
+  function setWeight(wid,val){
+    if(!canEdit) return;
+    const cur=attendance[wid]||{}; const w=val===''?null:parseFloat(val);
+    const next={...cur, weight:(w===null||isNaN(w))?null:w}; attendance[wid]=next;
+    clearTimeout(weightTimers[wid]);
+    weightTimers[wid]=setTimeout(()=>{ fb.setDoc(attDoc(selDate,wid), next).catch(()=>banner('Could not save weigh-in.',true)); },500);
+    updateDelta(wid); updateCounts();
+  }
+  function addWrestler(name,wclass){ if(!canEdit) return; const ref=fb.doc(rosterCol()); fb.setDoc(ref,{name,wclass:wclass||'',created:Date.now()}).catch(()=>banner('Could not add wrestler.',true)); }
+  function removeWrestler(wid,name){ if(!canEdit) return; if(!confirm('Remove '+name+' from the roster? Past records stay saved.')) return; fb.deleteDoc(fb.doc(fdb,'roster',wid)).catch(()=>banner('Could not remove wrestler.',true)); }
+  function updateProfile(wid, fields){
+    if(!canEdit) return Promise.reject();
+    return fb.updateDoc(fb.doc(fdb,'roster',wid), fields);
+  }
+
+  function updateCounts(){
+    let p=0,a=0,e=0,w=0;
+    roster.forEach(r=>{ const rec=attendance[r.id]||{}; if(rec.status==='present')p++; else if(rec.status==='absent')a++; else if(rec.status==='excused')e++; if(rec.weight!=null&&!isNaN(rec.weight))w++; });
+    $('#cPresent').textContent=p; $('#cAbsent').textContent=a; $('#cExcused').textContent=e; $('#cWeigh').textContent=w;
+    updateMissing();
+  }
+  // Present at a practice with no weight recorded: highlight the box and list them.
+  function updateMissing(){
+    const prac=isPractice(selDate), missing=[];
+    roster.forEach(r=>{
+      const rec=attendance[r.id]||{}, row=document.querySelector('.row[data-id="'+r.id+'"]');
+      const miss = canEdit && prac && rec.status==='present' && !validW(rec.weight);
+      if(miss) missing.push(r.name);
+      if(!row) return;
+      const box=row.querySelector('.weigh'); if(box) box.classList.toggle('missing', miss);
+      const dl=row.querySelector('.delta');
+      if(dl){ if(miss){ dl.className='delta missing'; dl.textContent='Needs weigh-in'; } else if(dl.classList.contains('missing')){ dl.className='delta'; dl.textContent=''; updateDelta(r.id); } }
+    });
+    const bar=$('#missBar'); if(!bar) return;
+    bar.classList.toggle('hidden', !missing.length);
+    if(missing.length) bar.textContent='⚠ '+missing.length+' present without a weigh-in: '+missing.join(', ');
+  }
+  function deltaHtml(wid){
+    const rec=attendance[wid]||{}, prev=prevWeights[wid];
+    if(rec.weight==null||isNaN(rec.weight)||!prev) return {cls:'',txt:''};
+    const diff=+(rec.weight-prev.weight).toFixed(1);
+    if(diff===0) return {cls:'',txt:'no change'};
+    return {cls:diff>0?'up':'down', txt:(diff>0?'▲':'▼')+' '+Math.abs(diff)+' lb'};
+  }
+  function updateDelta(wid){
+    const el=document.querySelector('.delta[data-delta="'+wid+'"]'); if(!el) return;
+    const w=roster.find(r=>r.id===wid), rec=attendance[wid]||{};
+    const d=deltaHtml(wid);
+    if(canEdit && isPractice(selDate) && rec.status==='present' && !validW(rec.weight)){ el.className='delta missing'; el.textContent='Needs weigh-in'; }
+    else { el.className='delta '+d.cls; el.textContent=d.txt; }
+    const tg=document.querySelector('[data-tgt="'+wid+'"]');
+    if(tg){ const v=vsClass(w, rec.weight); tg.className='tgt '+(v?v.cls:''); tg.textContent=v?', '+v.txt:''; }
+    const mn=document.querySelector('[data-min="'+wid+'"]');
+    if(mn){ const m=canEdit?vsMin(w, rec.weight):null; mn.className='mn '+(m?m.cls:''); mn.textContent=m?((w&&w.wclass)?', ':'')+m.txt:''; }
+    const line=document.querySelector('[data-cls="'+wid+'"]');
+    if(line) line.classList.toggle('hidden', !(w&&w.wclass) && !(mn&&mn.textContent));
+  }
+  function updateDeltas(){ roster.forEach(r=>updateDelta(r.id)); }
+  function updateRowStatus(wid){
+    const row=document.querySelector('.row[data-id="'+wid+'"]'); if(!row) return;
+    const rec=attendance[wid]||{};
+    row.querySelectorAll('[data-status]').forEach(btn=>{ if(rec.status===btn.dataset.status) btn.setAttribute('data-on',btn.dataset.status); else btn.removeAttribute('data-on'); });
+    const off=rec.status==='absent'||rec.status==='excused';
+    row.querySelector('.weigh').classList.toggle('locked', off);
+    const ni=row.querySelector('[data-note]'); if(ni) ni.classList.toggle('hidden', !(canEdit && off));
+  }
+  function patchNotes(){
+    document.querySelectorAll('.row[data-id]').forEach(row=>{
+      const id=row.dataset.id, ni=row.querySelector('[data-note]'); if(!ni) return;
+      if(!editing.has('n:'+id)) ni.value=(notes[id]||{})[selDate]||'';
+      updateRowStatus(id);
+    });
+  }
+  // Surgical update after an attendance snapshot: never rebuild rows, never touch a focused input.
+  function patchDaily(){
+    if(roster.length===0) return renderDaily();
+    for(const r of roster){ if(!document.querySelector('.row[data-id="'+r.id+'"]')) return renderDaily(); }
+    roster.forEach(r=>{
+      const row=document.querySelector('.row[data-id="'+r.id+'"]');
+      updateRowStatus(r.id);
+      const wi=row.querySelector('[data-weight]');
+      if(wi && !editing.has(r.id)){ const rec=attendance[r.id]||{}; const v=validW(rec.weight)?String(rec.weight):''; if(wi.value!==v) wi.value=v; }
+      updateDelta(r.id);
+    });
+    updateCounts();
+  }
+  function renderDayTag(){
+    const el=$('#dayTag'); if(!el) return;
+    const p=isPractice(selDate), ov=Object.prototype.hasOwnProperty.call(schedule.overrides,selDate);
+    const label = p ? (ov?'Added practice day':'Practice day') : (ov?'Practice cancelled':'No practice scheduled');
+    let html=`<span class="pill">${label}</span>`;
+    if(!p) html+=`<span>Attendance on this day won’t count toward rates.</span>`;
+    if(canEdit){
+      if(ov) html+=`<button class="linkbtn" data-ov="reset">Undo, use regular schedule</button>`;
+      else if(p) html+=`<button class="linkbtn" data-ov="cancel">Cancel this practice</button>`;
+      else html+=`<button class="linkbtn" data-ov="add">Make this a practice day</button>`;
+    }
+    el.className='daytag'+(p?'':' off'); el.innerHTML=html;
+    const b=el.querySelector('[data-ov]');
+    if(b) b.onclick=()=>{ const k=b.dataset.ov; setOverride(selDate, k==='reset'?null:(k==='add')); };
+  }
+
+  function renderDaily(){
+    $('#dayTitle').textContent=prettyDate(selDate);
+    renderDayTag();
+    const el=$('#roster');
+    if(roster.length===0){
+      el.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><path d="M17 11h5M19.5 8.5v5"/></svg><p>No wrestlers yet.</p>${canEdit?'<p style="font-size:12.5px">Add your team with the button above.</p>':'<p style="font-size:12.5px">A coach can sign in to add the roster.</p>'}</div>`;
+      updateCounts(); return;
+    }
+    let rows=`<div class="row head"><div>Wrestler</div><div>Attendance</div><div style="text-align:right">Weigh-In</div><div></div></div>`;
+    roster.forEach(r=>{
+      const rec=attendance[r.id]||{}, col=colorFor(r.id);
+      const wval=(rec.weight!=null&&!isNaN(rec.weight))?rec.weight:'';
+      const locked=rec.status==='absent'||rec.status==='excused';
+      const d=deltaHtml(r.id);
+      const dis=canEdit?'':'disabled';
+      rows+=`<div class="row" data-id="${r.id}">
+        <div class="wrestler clickable" data-profile="${r.id}" title="Open profile"><div class="avatar" style="background:${col}">${initials(r.name)}</div><div style="min-width:0"><div class="wname">${escapeHtml(r.name)}<span class="chev">›</span></div><div class="wclass ${r.wclass?'':'hidden'}" data-cls="${r.id}">${r.wclass?`${escapeHtml(r.wclass)} lb class<span class="tgt" data-tgt="${r.id}"></span>`:''}<span class="mn" data-min="${r.id}"></span></div></div></div>
+        <div class="status-cell"><div class="status-group ${canEdit?'':'ro'}">${STATUSES.map(s=>`<button data-status="${s}" ${rec.status===s?`data-on="${s}"`:''} ${dis}>${s[0].toUpperCase()+s.slice(1)}</button>`).join('')}</div>${canEdit?`<input class="note-in ${locked?'':'hidden'}" data-note list="reasonList" maxlength="80" placeholder="Reason (coaches only)" value="${escapeHtml((notes[r.id]||{})[selDate]||'')}" aria-label="Absence reason for ${escapeHtml(r.name)}">`:''}</div>
+        <div class="weigh-cell"><div class="weigh ${locked?'locked':''}"><input type="number" inputmode="decimal" step="0.1" placeholder="—" value="${wval}" data-weight ${dis} aria-label="Weight for ${escapeHtml(r.name)}"><span class="u">lb</span></div><div class="delta ${d.cls}" data-delta="${r.id}">${d.txt}</div></div>
+        <button class="del ${canEdit?'':'hidden'}" data-del title="Remove from roster">×</button>
+      </div>`;
+    });
+    el.innerHTML=rows;
+    el.querySelectorAll('.row[data-id]').forEach(row=>{
+      const id=row.dataset.id;
+      row.querySelectorAll('[data-status]').forEach(btn=>{ btn.onclick=()=>setStatus(id,btn.dataset.status); });
+      const wi=row.querySelector('[data-weight]');
+      if(wi){ wi.oninput=()=>setWeight(id,wi.value); wi.onfocus=()=>editing.add(id); wi.onblur=()=>editing.delete(id); }
+      const ni=row.querySelector('[data-note]');
+      if(ni){ ni.oninput=()=>setNote(id,ni.value); ni.onfocus=()=>editing.add('n:'+id); ni.onblur=()=>{ editing.delete('n:'+id); }; }
+      const name=roster.find(r=>r.id===id)?.name||'';
+      const del=row.querySelector('[data-del]'); if(del) del.onclick=()=>removeWrestler(id,name);
+      const prof=row.querySelector('[data-profile]'); if(prof) prof.onclick=()=>openProfile(id);
+    });
+    updateDeltas(); updateCounts(); renderDayTag();
+  }
+
+  function watchWeek(){
+    if(unsubWeek) unsubWeek.forEach(u=>u());
+    unsubWeek=[]; weekData={};
+    if(!started) return;
+    for(let i=0;i<7;i++){
+      const dstr=addDays(weekStart,i);
+      unsubWeek.push(fb.onSnapshot(attCol(dstr), snap=>{ const day={}; snap.docs.forEach(doc=>day[doc.id]=doc.data()); weekData[dstr]=day; if(view==='week') renderWeek(); }, ()=>{}));
+    }
+  }
+  function renderWeek(){
+    const days=[]; for(let i=0;i<7;i++) days.push(addDays(weekStart,i));
+    $('#weekRange').textContent=shortDate(weekStart)+' – '+shortDate(days[6]);
+    const t=$('#weekTable');
+    if(roster.length===0){ t.innerHTML='<tr><td style="padding:40px" class="cell-x">No wrestlers on the roster yet.</td></tr>'; return; }
+    const today=todayStr();
+    const hasData=d=>weekData[d]&&Object.values(weekData[d]).some(r=>r.status||validW(r.weight));
+    const taken=d=>weekData[d]&&Object.values(weekData[d]).some(r=>r.status);
+    let showDays=days.filter(d=>isPractice(d)||hasData(d));
+    if(!showDays.length) showDays=days.filter(d=>{const dow=parseLocal(d).getDay();return dow>=1&&dow<=5;});
+    let head='<tr><th style="text-align:left">Wrestler</th>';
+    showDays.forEach(d=>{
+      const off=!isPractice(d);
+      const sub= off ? '<span class="thsub">no practice</span>' : ((d<today && !taken(d)) ? '<span class="thsub warn">not taken</span>' : '');
+      head+='<th class="'+(off?'offday':'')+'">'+parseLocal(d).toLocaleDateString(undefined,{weekday:'short'})+'<br><span style="font-weight:400">'+parseLocal(d).toLocaleDateString(undefined,{month:'numeric',day:'numeric'})+'</span>'+sub+'</th>';
+    });
+    head+='<th class="totcol">Att. Rate</th><th class="totcol">Wt. Change</th></tr>';
+    let body='';
+    roster.forEach(r=>{
+      let first=null,last=null,cells='';
+      showDays.forEach(d=>{
+        const rec=(weekData[d]||{})[r.id]||{}, st=rec.status;
+        let mark='<span class="cell-x">—</span>';
+        if(st==='present')mark='<span class="cell-p">P</span>'; else if(st==='absent')mark='<span class="cell-a">A</span>'; else if(st==='excused')mark='<span class="cell-e">E</span>';
+        let wtxt='';
+        if(validW(rec.weight)){ wtxt='<div class="cell-w">'+rec.weight+'</div>'; if(first===null)first={date:d,weight:rec.weight}; last={date:d,weight:rec.weight}; }
+        const reason=canEdit && (st==='absent'||st==='excused') ? (notes[r.id]||{})[d] : '';
+        cells+='<td class="'+(isPractice(d)?'':'offday')+'"'+(reason?' title="'+escapeHtml(reason)+'"':'')+'>'+mark+wtxt+'</td>';
+      });
+      const rt=rateFor(r, days, weekData);
+      const rate=rt.pct==null?'—':rt.pct+'%';
+      let wc='—',wcls='';
+      if(first&&last&&first.weight!==last.weight){
+        const diff=+(last.weight-first.weight).toFixed(1); wc=(diff>0?'+':'')+diff+' lb'; wcls=diff>0?'cell-a':'cell-p';
+      } else if(first){ wc='steady'; }
+      body+=`<tr><td class="name clickable" data-profile="${r.id}">${escapeHtml(r.name)}${r.wclass?'<div class="sub2">'+escapeHtml(r.wclass)+' lb</div>':''}</td>${cells}<td class="totcol rate" title="${rt.attended} of ${rt.counted} counted practices">${rate}</td><td class="totcol ${wcls}">${wc}</td></tr>`;
+    });
+    t.innerHTML=head+body;
+    t.querySelectorAll('[data-profile]').forEach(td=>{ td.onclick=()=>openProfile(td.dataset.profile); });
+  }
+
+  /* ---------- PROFILE ---------- */
+  function updateProfileHeader(w){
+    $('#pAvatar').style.background=colorFor(w.id);
+    $('#pAvatar').textContent=initials(w.name);
+    $('#pName').textContent=w.name;
+    const bits=[w.wclass ? (w.wclass+' lb weight class') : 'No weight class set'];
+    if(w.grade) bits.push('Grade '+w.grade);
+    $('#pClass').textContent = bits.join(', ');
+  }
+  function openProfile(wid){
+    const w=roster.find(r=>r.id===wid); if(!w) return;
+    profileOpenId=wid;
+    updateProfileHeader(w);
+    $('#profileScrim').classList.add('open');
+    renderProfile(wid);
+  }
+  function closeProfile(){ profileOpenId=null; profileToken++; $('#profileScrim').classList.remove('open'); }
+
+  async function renderProfile(wid){
+    const w=roster.find(r=>r.id===wid); if(!w) return;
+    const body=$('#profileBody');
+    const myToken=++profileToken;
+    body.innerHTML=`<div class="profile-loading">Loading season stats…</div>`;
+
+    // Scan the season for this wrestler's records.
+    const dates=[]; for(let i=0;i<SEASON_SCAN_DAYS;i++) dates.push(addDays(todayStr(),-i));
+    const recs=[]; // {date, status, weight}
+    const takenDays={}; // date -> {wid:{status}} (only whether anyone was marked matters)
+    await Promise.all(dates.map(dstr=>
+      fb.getDocs(attCol(dstr)).then(snap=>{
+        snap.docs.forEach(doc=>{
+          const d=doc.data();
+          if(d.status){ (takenDays[dstr]=takenDays[dstr]||{})[doc.id]={status:d.status}; }
+          if(doc.id===wid && (d.status||d.weight!=null)) recs.push({date:dstr, status:d.status||null, weight:validW(d.weight)?d.weight:null});
+        });
+      }).catch(()=>{})
+    ));
+    if(myToken!==profileToken) return; // a newer open/close superseded this
+
+    recs.sort((a,b)=>a.date<b.date?-1:1);
+    const present=recs.filter(r=>r.status==='present').length;
+    const absent=recs.filter(r=>r.status==='absent').length;
+    const excused=recs.filter(r=>r.status==='excused').length;
+    const held=present+absent+excused;
+    const rt=rateFor(w, dates, takenDays), rate=rt.pct;
+    const rStart=[schedule.seasonStart, createdStr(w), dates[dates.length-1]].filter(Boolean).sort().pop();
+    let notTaken=0; const today=todayStr();
+    dates.forEach(d=>{ if(d<today && d>=rStart && isPractice(d) && !takenDays[d]) notTaken++; });
+    const weighins=recs.filter(r=>r.weight!=null);
+    const weights=weighins.map(r=>r.weight);
+    const curW=weights.length?weights[weights.length-1]:null;
+    const startW=weights.length?weights[0]:null;
+    const hiW=weights.length?Math.max(...weights):null;
+    const loW=weights.length?Math.min(...weights):null;
+    const netW=(startW!=null&&curW!=null)?+(curW-startW).toFixed(1):null;
+
+    const fmtW=v=>v==null?'—':v;
+    const netTxt = netW==null?'—':((netW>0?'+':'')+netW+' lb');
+    const netCls = netW==null?'':(netW>0?'a':(netW<0?'p':''));
+
+    let html='';
+
+    // Profile details + coach editor
+    const det=[];
+    if(w.parentName||w.parentPhone){
+      const ph=w.parentPhone?` <a href="tel:${escapeHtml(String(w.parentPhone).replace(/[^0-9+]/g,''))}">${escapeHtml(w.parentPhone)}</a>`:'';
+      det.push(`<span>Parent/guardian: <b>${escapeHtml(w.parentName||'')}</b>${ph}</span>`);
+    }
+    if(w.phone) det.push(`<span>Wrestler phone: <a href="tel:${escapeHtml(String(w.phone).replace(/[^0-9+]/g,''))}">${escapeHtml(w.phone)}</a></span>`);
+    if(det.length) html+=`<div class="pdetails">${det.join('')}</div>`;
+    if(canEdit){
+      const isStd = w.wclass && WCLASSES.includes(String(w.wclass));
+      const opts = ['<option value="">— none —</option>']
+        .concat(WCLASSES.map(c=>`<option value="${c}" ${String(w.wclass)===c?'selected':''}>${c} lb</option>`))
+        .concat([`<option value="__custom__" ${(w.wclass&&!isStd)?'selected':''}>Custom…</option>`]).join('');
+      const grades=['','7','8','9','10','11','12'];
+      const gopts=grades.map(g=>`<option value="${g}" ${String(w.grade||'')===g?'selected':''}>${g?'Grade '+g:'— none —'}</option>`).join('');
+      const ev=k=>escapeHtml(w[k]?String(w[k]):'');
+      html+=`<div class="pedit"><details id="pEditDetails"><summary>Edit profile</summary>
+        <div class="pgrid">
+          <div class="field full"><label for="pfName">Name</label><input id="pfName" type="text" maxlength="60" value="${ev('name')}"></div>
+          <div class="field"><label for="clsSelect">Weight class</label><select id="clsSelect">${opts}</select></div>
+          <div class="field ${(w.wclass&&!isStd)?'':'hidden'}" id="clsCustomWrap"><label for="clsCustom">Custom class</label><input id="clsCustom" type="text" placeholder="e.g. 138" value="${(w.wclass&&!isStd)?escapeHtml(String(w.wclass)):''}"></div>
+          <div class="field"><label for="pfGrade">Grade</label><select id="pfGrade">${gopts}</select></div>
+          <div class="field"><label for="pfPhone">Wrestler phone</label><input id="pfPhone" type="tel" maxlength="30" value="${ev('phone')}"></div>
+          <div class="field"><label for="pfParent">Parent/guardian</label><input id="pfParent" type="text" maxlength="60" value="${ev('parentName')}"></div>
+          <div class="field"><label for="pfParentPhone">Parent phone</label><input id="pfParentPhone" type="tel" maxlength="30" value="${ev('parentPhone')}"></div>
+        </div>
+        <div class="pedit-actions"><button class="save-cls" id="clsSave">Save profile</button><span class="savedtag" id="clsSaved">Saved ✓</span></div>
+      </details></div>`;
+    }
+
+    // Stats grid
+    html+=`<div class="pstats">
+      <div class="pstat p"><div class="pn">${present}</div><div class="pl">Present</div></div>
+      <div class="pstat a"><div class="pn">${absent}</div><div class="pl">Absent</div></div>
+      <div class="pstat e"><div class="pn">${excused}</div><div class="pl">Excused</div></div>
+      <div class="pstat"><div class="pn">${rate==null?'—':rate+'%'}</div><div class="pl">Att. Rate</div></div>
+      <div class="pstat"><div class="pn">${fmtW(curW)}</div><div class="pl">Current Wt</div></div>
+      <div class="pstat"><div class="pn" style="color:${netCls==='a'?'var(--absent)':netCls==='p'?'var(--present)':'inherit'}">${netTxt}</div><div class="pl">Net Change</div></div>
+    </div>`;
+
+    // How the rate was counted
+    let cap = rt.counted ? `Attendance rate: ${rt.attended} of ${rt.counted} counted practices since ${medDate(rStart)}` : `No counted practices since ${medDate(rStart)} yet`;
+    if(rt.unmarked) cap+=`, including ${rt.unmarked} unmarked (counted as missed)`;
+    cap+='.';
+    if(notTaken) cap+=` ${notTaken} scheduled practice${notTaken===1?'':'s'} had no attendance taken and ${notTaken===1?'is':'are'} skipped.`;
+    if(notTaken && !schedule.seasonStart && canEdit) cap+=` Set a season start under Schedule to skip preseason days.`;
+    html+=`<div class="pchart-cap" style="margin:-10px 0 20px;text-align:left">${cap}</div>`;
+
+    // Weight management: target vs actual
+    const target=targetOf(w);
+    const lastWi=weighins.length?weighins[weighins.length-1]:null;
+    if(target!=null){
+      const diff=lastWi?r1(lastWi.weight-target):null;
+      const dTxt=diff==null?'—':(diff>0?'+'+diff:diff)+' lb';
+      const dCol=diff==null?'inherit':(diff>0?'var(--ink)':'var(--present)');
+      html+=`<div class="psection-title">Weight vs. class</div><div class="wmgmt">
+        <div class="wm-stats">
+          <div><div class="pn">${target}</div><div class="pl">Target class</div></div>
+          <div><div class="pn">${lastWi?lastWi.weight:'—'}</div><div class="pl">Actual${lastWi?' ('+medDate(lastWi.date)+')':''}</div></div>
+          <div><div class="pn" style="color:${dCol}">${dTxt}</div><div class="pl">Difference</div></div>
+        </div>`;
+      if(weighins.length>=2){
+        const sd=r1(weighins[0].weight-target);
+        html+=`<div class="wm-note">Started the season ${sd>0?sd+' lb over':sd<0?Math.abs(sd)+' lb under':'on weight'} on ${medDate(weighins[0].date)}.</div>`;
+      }
+      html+=`</div>`;
+    }
+
+    // Hydration test & minimum weight (coach-only)
+    if(canEdit) html+=hydroSection(w, lastWi);
+
+    // Weight trend
+    html+=`<div class="psection-title">Weight trend</div>`;
+    if(weighins.length>=2){
+      html+=sparkline(weighins, target);
+      html+=`<div class="pchart-cap">${weighins.length} weigh-ins · start ${startW} · high ${hiW} · low ${loW}</div>`;
+    } else if(weighins.length===1){
+      html+=`<div class="pchart-empty">One weigh-in so far (${weighins[0].weight} lb on ${medDate(weighins[0].date)}). Need two to chart a trend.</div>`;
+    } else {
+      html+=`<div class="pchart-empty">No weigh-ins recorded yet.</div>`;
+    }
+
+    // Weigh-in history
+    if(weighins.length){
+      let rowsH=''; let prev=null;
+      for(let i=weighins.length-1;i>=0;i--){
+        const r=weighins[i];
+        let chg='', ccls='';
+        if(i>0){ const d=+(r.weight-weighins[i-1].weight).toFixed(1); if(d!==0){ chg=(d>0?'▲ ':'▼ ')+Math.abs(d); ccls=d>0?'up':'down'; } else chg='—'; }
+        rowsH+=`<tr><td class="wd">${medDate(r.date)}</td><td class="ww">${r.weight} lb</td><td class="wc2 ${ccls}">${chg}</td></tr>`;
+      }
+      html+=`<div class="psection-title" style="margin-top:20px">Weigh-in history</div><div class="whistory"><table>${rowsH}</table></div>`;
+    }
+
+    // Absences (reasons are coach-only)
+    const abs=recs.filter(r=>r.status==='absent'||r.status==='excused');
+    if(abs.length){
+      const wn=notes[wid]||{};
+      let rowsA='';
+      for(let i=abs.length-1;i>=0;i--){
+        const a=abs[i], reason=canEdit?(wn[a.date]||''):'';
+        rowsA+=`<tr><td class="wd">${medDate(a.date)}</td><td class="wt ${a.status==='absent'?'cell-a':'cell-e'}">${a.status==='absent'?'Absent':'Excused'}</td><td class="wr">${escapeHtml(reason)}</td></tr>`;
+      }
+      html+=`<div class="psection-title" style="margin-top:20px">Absences</div><div class="whistory"><table>${rowsA}</table></div>`;
+      if(canEdit) html+=`<div class="pchart-cap" style="text-align:left;margin-top:6px">Reasons are visible to signed-in coaches only.</div>`;
+    }
+
+    if(held===0 && weighins.length===0){
+      html+=`<div class="pchart-cap" style="margin-top:14px">No attendance recorded for this wrestler yet. Stats will fill in as you track practices.</div>`;
+    }
+
+    body.innerHTML=html;
+    if(canEdit) wireHydro(wid);
+
+    // Wire the profile editor
+    if(canEdit){
+      const sel=$('#clsSelect'), customWrap=$('#clsCustomWrap'), custom=$('#clsCustom'), saveBtn=$('#clsSave'), saved=$('#clsSaved');
+      sel.onchange=()=>{ customWrap.classList.toggle('hidden', sel.value!=='__custom__'); if(sel.value==='__custom__') custom.focus(); };
+      const doSave=async()=>{
+        const name=$('#pfName').value.trim();
+        if(!name){ $('#pfName').focus(); banner('Name can\u2019t be blank.', true); return; }
+        const fields={
+          name,
+          wclass: sel.value==='__custom__' ? custom.value.trim() : sel.value,
+          grade: $('#pfGrade').value,
+          phone: $('#pfPhone').value.trim(),
+          parentName: $('#pfParent').value.trim(),
+          parentPhone: $('#pfParentPhone').value.trim()
+        };
+        saveBtn.disabled=true;
+        try{
+          await updateProfile(wid, fields);
+          saved.classList.add('show'); setTimeout(()=>saved.classList.remove('show'),1600);
+          const ww=roster.find(r=>r.id===wid); if(ww){ Object.assign(ww, fields); updateProfileHeader(ww); }
+        }
+        catch(e){ banner('Could not save the profile. Are you still signed in?',true); }
+        finally{ saveBtn.disabled=false; }
+      };
+      saveBtn.onclick=doSave;
+      ['#pfName','#clsCustom','#pfPhone','#pfParent','#pfParentPhone'].forEach(id=>{ const el=$(id); if(el) el.onkeydown=e=>{ if(e.key==='Enter') doSave(); }; });
+    }
+  }
+
+  function hydroSection(w, lastWi){
+    const h=hydro[w.id]||null, hs=hydroSummary(h);
+    let out=`<div class="psection-title">Hydration test &amp; minimum weight</div><div class="hydro">`;
+    if(!h){
+      out+=`<div>No hydration test recorded.</div>`;
+    } else {
+      const usgTxt = validW(h.usg) ? `USG ${h.usg.toFixed(3)} <span class="${hs.passed?'pass':'fail'}">${hs.passed?'pass':'fail'}</span>` : 'USG not entered';
+      out+=`<div>Tested ${h.date?medDate(h.date):'(no date)'}: ${usgTxt}${validW(h.testWeight)?', '+h.testWeight+' lb':''}${validW(h.bodyFat)?', '+h.bodyFat+'% body fat':''}.</div>`;
+      if(hs.passed===false){
+        out+=`<div class="hbad">Specific gravity is above ${HYDRATION_PASS_USG.toFixed(3)}. The body-fat test isn’t valid until the wrestler passes hydration, so no minimum weight is set. Record the retest here.</div>`;
+      } else if(hs.min!=null){
+        const cur=lastWi?lastWi.weight:null, margin=cur!=null?r1(cur-hs.min):null;
+        out+=`<div class="wm-stats" style="margin-top:12px">
+          <div><div class="pn">${hs.min}</div><div class="pl">Min weight${hs.official?' (official)':''}</div></div>
+          <div><div class="pn">${hs.lowest??'—'}</div><div class="pl">Lowest class</div></div>
+          <div><div class="pn" style="color:${margin!=null&&margin<0?'var(--absent)':'inherit'}">${margin==null?'—':Math.abs(margin)+' lb'}</div><div class="pl">${margin!=null&&margin<0?'Below min':'Above min'}</div></div>
+        </div>`;
+        const t=targetOf(w);
+        if(t!=null && hs.lowest!=null && t<hs.lowest) out+=`<div class="hbad">The ${t} lb class is below this wrestler’s lowest eligible class (${hs.lowest}).</div>`;
+        if(hs.official && hs.calc!=null && hs.calc!==hs.min) out+=`<div class="wm-note">Calculated from the test: ${hs.calc} lb. Using the official number you entered.</div>`;
+      } else {
+        out+=`<div class="hline" style="color:var(--ink-soft)">Add test weight and body fat (or the official minimum) to set a minimum weight.</div>`;
+      }
+    }
+    const v=k=>(h&&validW(h[k]))?h[k]:'';
+    const girls=h&&h.minBodyFat===MIN_BODY_FAT.girls;
+    out+=`<details ${h?'':'open'}><summary>${h?'Update test':'Record a test'}</summary>
+      <div class="hgrid">
+        <div class="field"><label>Test date</label><input type="date" id="hDate" value="${h&&h.date?h.date:todayStr()}"></div>
+        <div class="field"><label>Specific gravity</label><input type="number" id="hUsg" step="0.001" min="1" max="1.06" inputmode="decimal" placeholder="e.g. 1.018" value="${v('usg')}"><div class="fhint">Pass is ${HYDRATION_PASS_USG.toFixed(3)} or lower</div></div>
+        <div class="field"><label>Weight at test (lb)</label><input type="number" id="hWt" step="0.1" inputmode="decimal" value="${v('testWeight')}"></div>
+        <div class="field"><label>Body fat %</label><input type="number" id="hBf" step="0.1" inputmode="decimal" value="${v('bodyFat')}"></div>
+        <div class="field full"><label>Minimum body fat</label><select id="hMinBf"><option value="${MIN_BODY_FAT.boys}" ${girls?'':'selected'}>${MIN_BODY_FAT.boys}% (boys)</option><option value="${MIN_BODY_FAT.girls}" ${girls?'selected':''}>${MIN_BODY_FAT.girls}% (girls)</option></select></div>
+        <div class="field full"><label>Official min weight (optional)</label><input type="number" id="hOff" step="0.1" inputmode="decimal" placeholder="From your state’s weight management system" value="${v('officialMin')}"><div class="fhint">If entered, this overrides the calculated number.</div></div>
+      </div>
+      <div class="hcalc" id="hCalc"></div>
+      <div class="hactions"><button class="hsave" id="hSave">Save test</button>${h?'<button class="hclear" id="hClear">Clear</button>':''}</div>
+    </details>`;
+    out+=`<div class="wm-note">Coaches only. Minimum weight = lean mass ÷ (1 − minimum body fat). Your state’s official number is authoritative.</div></div>`;
+    return out;
+  }
+  function readHydroForm(){
+    const n=id=>{ const x=parseFloat($(id).value); return isNaN(x)?null:x; };
+    return { date:$('#hDate').value||'', usg:n('#hUsg'), testWeight:n('#hWt'), bodyFat:n('#hBf'), minBodyFat:n('#hMinBf'), officialMin:n('#hOff'), updated:Date.now() };
+  }
+  function wireHydro(wid){
+    if(!$('#hSave')) return;
+    const calc=()=>{
+      const hs=hydroSummary(readHydroForm());
+      $('#hCalc').textContent = hs.passed===false ? 'Fails hydration, so no minimum weight is set.'
+        : hs.min!=null ? `Minimum weight ${hs.min} lb${hs.official?' (official)':''}, lowest class ${hs.lowest??'none in list'}.` : '';
+    };
+    ['#hUsg','#hWt','#hBf','#hMinBf','#hOff'].forEach(id=>$(id).oninput=calc); calc();
+    $('#hSave').onclick=async()=>{
+      const rec=readHydroForm();
+      if(rec.usg!=null && (rec.usg<1 || rec.usg>1.06)){ banner('Specific gravity should look like 1.018.', true); return; }
+      $('#hSave').disabled=true;
+      try{ await fb.setDoc(noteDoc(wid), {hydration:rec}, {merge:true}); hydro[wid]=rec; renderProfile(wid); updateDeltas(); }
+      catch(e){ banner('Could not save the hydration test. Check that the Firestore rules for privateNotes are published.', true); $('#hSave').disabled=false; }
+    };
+    const clr=$('#hClear');
+    if(clr) clr.onclick=async()=>{
+      if(!confirm('Clear this wrestler’s hydration test?')) return;
+      try{ await fb.setDoc(noteDoc(wid), {hydration:fb.deleteField()}, {merge:true}); delete hydro[wid]; renderProfile(wid); updateDeltas(); }
+      catch(e){ banner('Could not clear the hydration test.', true); }
+    };
+  }
+
+  // Simple inline SVG sparkline for weight over time.
+  function sparkline(weighins, target){
+    const W=512, H=120, padX=10, padT=14, padB=18;
+    const ws=weighins.map(r=>r.weight);
+    let min=Math.min(...ws), max=Math.max(...ws);
+    const showT = target!=null && target>=min-10 && target<=max+10;
+    if(showT){ min=Math.min(min,target); max=Math.max(max,target); }
+    if(min===max){ min-=1; max+=1; }
+    const n=weighins.length;
+    const x=i=> padX + (n===1?0:(i*(W-2*padX)/(n-1)));
+    const y=v=> padT + (max-v)*(H-padT-padB)/(max-min);
+    let pts=weighins.map((r,i)=>`${x(i).toFixed(1)},${y(r.weight).toFixed(1)}`).join(' ');
+    let dots=weighins.map((r,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(r.weight).toFixed(1)}" r="2.6" fill="var(--singlet)"/>`).join('');
+    // first/last labels
+    const f=weighins[0], l=weighins[n-1];
+    const startLbl=`<text x="${x(0).toFixed(1)}" y="${(y(f.weight)-7).toFixed(1)}" font-size="11" fill="var(--ink-soft)" font-family="Oswald,sans-serif">${f.weight}</text>`;
+    const endLbl=`<text x="${x(n-1).toFixed(1)}" y="${(y(l.weight)-7).toFixed(1)}" font-size="11" fill="var(--ink)" font-family="Oswald,sans-serif" text-anchor="end">${l.weight}</text>`;
+    const tline = showT ? `<line x1="${padX}" x2="${W-padX}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/><text x="${W/2}" y="${(y(target)+(y(target)>H-padB-4?-5:12)).toFixed(1)}" font-size="10.5" fill="var(--ink-soft)" font-family="Oswald,sans-serif" text-anchor="middle">${target} class</text>` : '';
+    return `<svg class="pchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      ${tline}
+      <polyline points="${pts}" fill="none" stroke="var(--singlet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      ${dots}${startLbl}${endLbl}
+    </svg>`;
+  }
+
+  function exportDayCSV(){
+    const hdr=['Date','Practice Day','Wrestler','Weight Class','Status','Weight (lb)','Change vs Last','Vs Class'];
+    if(canEdit) hdr.push('Min Weight','Vs Min','Absence Reason');
+    const rows=[hdr];
+    roster.forEach(r=>{
+      const rec=attendance[r.id]||{}, prev=prevWeights[r.id]; let chg='';
+      if(validW(rec.weight)&&prev){const d=+(rec.weight-prev.weight).toFixed(1); chg=(d>0?'+':'')+d;}
+      const v=vsClass(r,rec.weight);
+      const line=[selDate,isPractice(selDate)?'yes':'no',r.name,r.wclass||'',rec.status||'',validW(rec.weight)?rec.weight:'',chg,v?v.txt:''];
+      if(canEdit){ const hs=hydroSummary(hydro[r.id]), m=vsMin(r,rec.weight); line.push(hs&&hs.min!=null?hs.min:'', m?m.txt:'', (notes[r.id]||{})[selDate]||''); }
+      rows.push(line);
+    });
+    downloadCSV(rows,'attendance_'+selDate+'.csv');
+  }
+  async function exportWeekCSV(){
+    const days=[]; for(let i=0;i<7;i++) days.push(addDays(weekStart,i));
+    const header=['Wrestler','Weight Class']; days.forEach(d=>{header.push(shortDate(d)+' Status'); header.push(shortDate(d)+' Weight');}); header.push('Attendance Rate','Weight Change');
+    const rows=[header], snaps={};
+    await Promise.all(days.map(d=>fb.getDocs(attCol(d)).then(s=>{const day={};s.docs.forEach(doc=>day[doc.id]=doc.data());snaps[d]=day;}).catch(()=>{snaps[d]={};})));
+    roster.forEach(r=>{
+      let firstW=null,lastW=null; const line=[r.name,r.wclass||''];
+      days.forEach(d=>{ const rec=(snaps[d]||{})[r.id]||{}; line.push(rec.status||''); if(rec.weight!=null&&!isNaN(rec.weight)){line.push(rec.weight);if(firstW===null)firstW=rec.weight;lastW=rec.weight;}else line.push(''); });
+      const rt=rateFor(r, days, snaps); line.push(rt.pct==null?'':rt.pct+'%'); line.push((firstW!=null&&lastW!=null)?((lastW-firstW>0?'+':'')+(+(lastW-firstW).toFixed(1))):''); rows.push(line);
+    });
+    downloadCSV(rows,'weekly_'+weekStart+'.csv');
+  }
+  function downloadCSV(rows,filename){
+    const csv=rows.map(r=>r.map(c=>{const s=String(c??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  /* ---------- WRESTLER MODE (kiosk) ---------- */
+  // A locked check-in screen on a coach-signed-in device. Exit needs the coach PIN.
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} }
+  async function pinHash(pin){
+    const data=new TextEncoder().encode('matroom-kiosk:'+pin);
+    const buf=await crypto.subtle.digest('SHA-256', data);
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function renderPinState(){
+    const st=$('#pinState'), b=$('#pinChange'); if(!st) return;
+    st.textContent = kioskPinHash ? 'PIN is set' : 'Not set';
+    b.textContent = kioskPinHash ? 'Change PIN' : 'Set PIN';
+  }
+  function enterKiosk(resume){
+    if(!canEdit) return;
+    if(!kioskPinHash && !resume){ askPin('set', ()=>enterKiosk()); return; }
+    if(profileOpenId) closeProfile();
+    $('#schedScrim').classList.remove('open'); $('#scrim').classList.remove('open');
+    if(view!=='day') setView('day');
+    if(selDate!==todayStr()) changeDate(todayStr());
+    kioskOn=true; lsSet(KIOSK_KEY,'1');
+    $('#kiosk').classList.remove('hidden');
+    $('#kSearch').value='';
+    renderKiosk();
+    clearInterval(kDayTimer);
+    kDayTimer=setInterval(()=>{ if(kioskOn && selDate!==todayStr()){ changeDate(todayStr()); renderKiosk(); } }, 60000);
+  }
+  function hideKioskUI(){
+    kioskOn=false; kSelId=null; clearTimeout(kIdle); clearTimeout(kDoneTimer); clearInterval(kDayTimer);
+    ['#kiosk','#kSheet','#kDone','#pinSheet'].forEach(id=>$(id).classList.add('hidden'));
+  }
+  function exitKiosk(){ hideKioskUI(); lsSet(KIOSK_KEY,null); renderDaily(); }
+  function kCheckedIn(id){ const rec=attendance[id]||{}; return rec.status==='present' && validW(rec.weight); }
+  function renderKiosk(){
+    if(!kioskOn) return;
+    $('#kDate').textContent=prettyDate(selDate);
+    const note=$('#kNote'), prac=isPractice(selDate);
+    note.classList.toggle('hidden', prac);
+    if(!prac) note.textContent='Today isn’t on the practice schedule. Check-ins still save, and a coach can make today a practice day.';
+    const q=$('#kSearch').value.trim().toLowerCase();
+    const list=roster.filter(r=>!q || (r.name||'').toLowerCase().includes(q));
+    const g=$('#kGrid');
+    if(!roster.length) g.innerHTML='<div class="k-empty">No wrestlers on the roster yet.</div>';
+    else if(!list.length) g.innerHTML='<div class="k-empty">No name matches “'+escapeHtml(q)+'”.</div>';
+    else g.innerHTML=list.map(r=>{ const done=kCheckedIn(r.id);
+      return `<button class="k-name-btn ${done?'done':''}" data-k="${r.id}"><div class="avatar" style="background:${colorFor(r.id)}">${initials(r.name)}</div><span class="kn">${escapeHtml(r.name)}<span class="ks">${done?'✓ Checked in':'Tap to check in'}</span></span></button>`; }).join('');
+    g.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>kOpen(b.dataset.k));
+    const n=roster.filter(r=>kCheckedIn(r.id)).length;
+    $('#kCount').textContent = roster.length ? `${n} of ${roster.length} checked in` : '';
+  }
+  function kResetIdle(){ clearTimeout(kIdle); kIdle=setTimeout(kClose, 45000); }
+  function kOpen(id){
+    const r=roster.find(x=>x.id===id); if(!r) return;
+    kSelId=id;
+    $('#kName').textContent=r.name;
+    $('#kSub').textContent = kCheckedIn(id) ? 'You’re already checked in. Enter your weight again only if it was wrong.' : 'Step on the scale and enter your weight.';
+    $('#kWeight').value=''; $('#kErr').textContent=''; $('#kSubmit').disabled=false;
+    $('#kSheet').classList.remove('hidden');
+    setTimeout(()=>$('#kWeight').focus(), 50);
+    kResetIdle();
+  }
+  function kClose(){ kSelId=null; clearTimeout(kIdle); $('#kSheet').classList.add('hidden'); }
+  async function kSubmit(){
+    const id=kSelId; if(!id) return;
+    const w=parseFloat($('#kWeight').value);
+    if(isNaN(w) || w<60 || w>400){ $('#kErr').textContent='That doesn’t look right. Check the scale and try again.'; $('#kWeight').focus(); return; }
+    const wt=Math.round(w*10)/10, d=selDate, cur=attendance[id]||{};
+    const next={...cur, status:'present', weight:wt};
+    $('#kSubmit').disabled=true;
+    try{
+      await fb.setDoc(attDoc(d,id), next);
+      attendance[id]=next;
+      if((notes[id]||{})[d]) setNote(id,'',true); // they showed up: drop any absence reason
+    } catch(e){ $('#kErr').textContent='Couldn’t save. Ask a coach for help.'; $('#kSubmit').disabled=false; return; }
+    const r=roster.find(x=>x.id===id);
+    kClose();
+    $('#kSearch').value='';
+    $('#kDoneName').textContent=r?r.name:'';
+    $('#kDoneSub').textContent=wt+' lb. You’re marked present.';
+    $('#kDone').classList.remove('hidden');
+    renderKiosk();
+    clearTimeout(kDoneTimer); kDoneTimer=setTimeout(()=>$('#kDone').classList.add('hidden'), 2200);
+  }
+
+  // PIN pad: mode 'set' (enter + confirm, then save) or 'verify' (exit Wrestler Mode).
+  let pinMode='verify', pinBuf='', pinFirst='', pinDoneCb=null, pinFails=0, pinLockUntil=0;
+  function askPin(mode, cb){
+    // Safety valve: if no PIN exists (e.g. it was never saved), don't trap the coach in Wrestler Mode.
+    if(mode==='verify' && !kioskPinHash){ if(confirm('No coach PIN is set. Leave Wrestler Mode?')) exitKiosk(); return; }
+    pinMode=mode; pinBuf=''; pinFirst=''; pinDoneCb=cb||null;
+    $('#pinTitle').textContent = mode==='set' ? (kioskPinHash?'New coach PIN':'Set a coach PIN') : 'Coach PIN';
+    $('#pinSub').textContent = mode==='set' ? 'Pick 4 digits. Coaches enter this to leave Wrestler Mode.' : 'Enter the PIN to go back to Coach Mode. Forgot it? Set a new one from another coach’s device under Schedule.';
+    $('#pinErr').textContent=''; drawDots();
+    $('#pinSheet').classList.remove('hidden');
+  }
+  function drawDots(){ [...$('#pinDots').children].forEach((d,i)=>d.classList.toggle('on', i<pinBuf.length)); }
+  function pinShake(msg){ $('#pinErr').textContent=msg; const el=$('#pinDots'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); pinBuf=''; drawDots(); }
+  async function pinComplete(){
+    if(pinMode==='verify'){
+      if(Date.now()<pinLockUntil){ pinShake('Too many tries. Wait a moment.'); return; }
+      let ok=false; try{ ok = kioskPinHash && (await pinHash(pinBuf))===kioskPinHash; }catch(e){}
+      if(ok){ pinFails=0; $('#pinSheet').classList.add('hidden'); exitKiosk(); }
+      else { pinFails++; if(pinFails>=5){ pinLockUntil=Date.now()+30000; pinFails=0; pinShake('Too many tries. Wait 30 seconds.'); } else pinShake('Wrong PIN.'); }
+      return;
+    }
+    if(!pinFirst){ pinFirst=pinBuf; pinBuf=''; drawDots(); $('#pinSub').textContent='Enter the same 4 digits again to confirm.'; $('#pinErr').textContent=''; return; }
+    if(pinBuf!==pinFirst){ pinFirst=''; $('#pinSub').textContent='Pick 4 digits. Coaches enter this to leave Wrestler Mode.'; pinShake('Those didn’t match. Start over.'); return; }
+    try{
+      const h=await pinHash(pinBuf);
+      await fb.setDoc(settingsDoc(), {kioskPinHash:h}, {merge:true});
+      kioskPinHash=h; renderPinState();
+      $('#pinSheet').classList.add('hidden');
+      banner('Wrestler Mode PIN saved.');
+      if(pinDoneCb) pinDoneCb();
+    } catch(e){ pinShake('Couldn’t save the PIN. Check your connection.'); }
+  }
+  function pinKey(k){
+    if(k==='del'){ pinBuf=pinBuf.slice(0,-1); drawDots(); return; }
+    if(pinBuf.length>=4) return;
+    pinBuf+=k; drawDots();
+    if(pinBuf.length===4) pinComplete();
+  }
+
+  /* ---------- SCHEDULE MODAL ---------- */
+  const DOW=[[1,'Mon'],[2,'Tue'],[3,'Wed'],[4,'Thu'],[5,'Fri'],[6,'Sat'],[0,'Sun']];
+  function openSchedule(){
+    if(!canEdit) return;
+    renderPinState();
+    schedDraft={days:[...schedule.practiceDays]};
+    $('#seasonStart').value=schedule.seasonStart||'';
+    renderDow(); renderOverrides();
+    $('#schedScrim').classList.add('open');
+  }
+  function closeSchedule(){ $('#schedScrim').classList.remove('open'); schedDraft=null; }
+  function renderDow(){
+    const g=$('#dowGroup');
+    g.innerHTML=DOW.map(([n,l])=>`<button type="button" data-dow="${n}" aria-pressed="${schedDraft.days.includes(n)}">${l}</button>`).join('');
+    g.querySelectorAll('[data-dow]').forEach(b=>b.onclick=()=>{
+      const n=+b.dataset.dow, i=schedDraft.days.indexOf(n);
+      if(i>=0) schedDraft.days.splice(i,1); else schedDraft.days.push(n);
+      b.setAttribute('aria-pressed', schedDraft.days.includes(n));
+    });
+  }
+  function renderOverrides(){
+    const el=$('#ovList');
+    const keys=Object.keys(schedule.overrides).filter(k=>typeof schedule.overrides[k]==='boolean').sort().reverse();
+    if(!keys.length){ el.innerHTML='<div class="ovempty">None yet. Cancel or add a single date from the Daily tab.</div>'; return; }
+    el.innerHTML=keys.map(k=>`<div class="ovrow"><span>${escapeHtml(shortDate(k))}</span><span class="ovk ${schedule.overrides[k]?'add':'cancel'}">${schedule.overrides[k]?'Added':'Cancelled'}</span><button class="linkbtn" data-rm="${k}">Remove</button></div>`).join('');
+    el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>setOverride(b.dataset.rm,null));
+  }
+  async function saveSchedule(){
+    if(!canEdit||!schedDraft) return;
+    const btn=$('#schedSave'); btn.disabled=true;
+    try{
+      await fb.setDoc(settingsDoc(), {practiceDays:[...schedDraft.days].sort(), seasonStart:$('#seasonStart').value||''}, {merge:true});
+      closeSchedule(); banner('Practice schedule saved.');
+      if(profileOpenId) renderProfile(profileOpenId);
+    } catch(e){ banner('Could not save the schedule. Check that the updated Firestore rules are published.',true); }
+    finally{ btn.disabled=false; }
+  }
+
+  function syncDateInput(){ $('#dateInput').value=selDate; }
+  function changeDate(nd){ selDate=nd; syncDateInput(); watchDate(); renderDaily(); }
+  function shiftDate(n){ changeDate(addDays(selDate,n)); }
+  function setView(v){
+    view=v;
+    $('#tabDay').classList.toggle('active',v==='day'); $('#tabWeek').classList.toggle('active',v==='week');
+    $('#dailyView').classList.toggle('hidden',v!=='day'); $('#weekView').classList.toggle('hidden',v!=='week');
+    $('#dateNav').style.visibility=v==='day'?'visible':'hidden';
+    if(v==='week'){ watchWeek(); renderWeek(); } else renderDaily();
+  }
+
+  // wire UI
+  $('#prevDay').onclick=()=>shiftDate(-1); $('#nextDay').onclick=()=>shiftDate(1);
+  $('#todayBtn').onclick=()=>changeDate(todayStr()); $('#dateInput').onchange=e=>changeDate(e.target.value);
+  $('#tabDay').onclick=()=>setView('day'); $('#tabWeek').onclick=()=>setView('week');
+  $('#prevWeek').onclick=()=>{weekStart=addDays(weekStart,-7);watchWeek();renderWeek();};
+  $('#nextWeek').onclick=()=>{weekStart=addDays(weekStart,7);watchWeek();renderWeek();};
+  $('#thisWeek').onclick=()=>{weekStart=mondayOf(todayStr());watchWeek();renderWeek();};
+  $('#exportDay').onclick=exportDayCSV; $('#exportWeek').onclick=exportWeekCSV;
+  const scrim=$('#scrim');
+  $('#addBtn').onclick=()=>{ if(!canEdit){banner('Sign in as a coach to add wrestlers.');return;} scrim.classList.add('open'); $('#fName').value='';$('#fClass').value=''; setTimeout(()=>$('#fName').focus(),50); };
+  $('#cancelAdd').onclick=()=>scrim.classList.remove('open');
+  scrim.onclick=e=>{ if(e.target===scrim) scrim.classList.remove('open'); };
+  $('#saveAdd').onclick=()=>{ const n=$('#fName').value.trim(); if(!n){$('#fName').focus();return;} addWrestler(n,$('#fClass').value.trim()); scrim.classList.remove('open'); };
+  $('#fName').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();}; $('#fClass').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();};
+
+  // Wrestler Mode wiring
+  $('#kioskBtn').onclick=()=>enterKiosk();
+  $('#kExit').onclick=()=>askPin('verify');
+  $('#kSearch').oninput=renderKiosk;
+  $('#kCancel').onclick=kClose;
+  $('#kSubmit').onclick=kSubmit;
+  $('#kWeight').oninput=()=>{ $('#kErr').textContent=''; kResetIdle(); };
+  $('#kWeight').onkeydown=e=>{ if(e.key==='Enter') kSubmit(); };
+  $('#kSheet').onclick=e=>{ if(e.target.id==='kSheet') kClose(); };
+  $('#kDone').onclick=()=>$('#kDone').classList.add('hidden');
+  $('#pinPad').innerHTML=['1','2','3','4','5','6','7','8','9','','0','del'].map(k=>k===''?'<button class="blank" tabindex="-1"></button>':`<button data-pin="${k}">${k==='del'?'⌫':k}</button>`).join('');
+  $('#pinPad').querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>pinKey(b.dataset.pin));
+  $('#pinCancel').onclick=()=>$('#pinSheet').classList.add('hidden');
+  document.addEventListener('keydown',e=>{ if($('#pinSheet').classList.contains('hidden')) return; if(/^[0-9]$/.test(e.key)) pinKey(e.key); else if(e.key==='Backspace') pinKey('del'); });
+  $('#pinChange').onclick=()=>askPin('set');
+
+  // schedule modal wiring
+  const sscrim=$('#schedScrim');
+  $('#schedBtn').onclick=openSchedule;
+  $('#schedCancel').onclick=closeSchedule;
+  $('#schedSave').onclick=saveSchedule;
+  sscrim.onclick=e=>{ if(e.target===sscrim) closeSchedule(); };
+  $('#reasonList').innerHTML=ABSENCE_REASONS.map(r=>`<option value="${escapeHtml(r)}">`).join('');
+
+  // profile modal wiring
+  const pscrim=$('#profileScrim');
+  $('#profileClose').onclick=closeProfile;
+  pscrim.onclick=e=>{ if(e.target===pscrim) closeProfile(); };
+  document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(kioskOn){ if(!$('#pinSheet').classList.contains('hidden')) $('#pinSheet').classList.add('hidden'); else kClose(); return; } if(sscrim.classList.contains('open')) closeSchedule(); else if(profileOpenId) closeProfile(); });
+
+  syncDateInput();
+}
+</script>
+</body>
+</html>
