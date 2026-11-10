@@ -205,6 +205,26 @@
   .tab-actions { margin-left:auto; align-self:center; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   .tab-actions .ghost-btn { padding:7px 13px; }
 
+  /* ---- Agenda / events ---- */
+  .agenda { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 6px; align-items:center; font-size:13px; }
+  .ag-chip .dot { box-shadow:0 0 0 1.5px rgba(255,255,255,.5); }
+  .ag-chip { border:1px solid var(--line); background:var(--card); border-radius:999px; padding:7px 13px; font-size:13px; cursor:pointer; color:var(--ink); display:inline-flex; gap:7px; align-items:center; font-family:'Inter',sans-serif; font-weight:600; }
+  .ag-chip .t { font-family:'Oswald',sans-serif; color:var(--ink-soft); font-size:12.5px; font-weight:500; letter-spacing:.3px; }
+  .ag-chip .dot { width:8px; height:8px; border-radius:50%; flex:none; }
+  .ag-chip.on { background:var(--mat); border-color:var(--mat); color:#f5f2ec; } .ag-chip.on .t { color:rgba(245,242,236,.72); }
+  :root[data-theme="dark"] .ag-chip.on { background:var(--singlet); border-color:var(--singlet); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ag-chip.on { background:var(--singlet); border-color:var(--singlet); } }
+  .ag-chip.dim { opacity:.6; } .ag-chip.dim .nm { text-decoration:line-through; }
+  .row.evrow { grid-template-columns:1fr 230px; }
+  .evlist { border:1px solid var(--line); border-radius:8px; max-height:210px; overflow-y:auto; }
+  .ev-days { display:flex; gap:5px; }
+  .ev-days button { flex:1; border:1px solid var(--line); background:transparent; color:var(--ink-soft); padding:7px 0; border-radius:7px; cursor:pointer; font-family:'Oswald',sans-serif; font-size:12px; }
+  .ev-days button[aria-pressed="true"] { background:var(--mat); border-color:var(--mat); color:#f5f2ec; }
+  .ev-modal { max-width:420px; max-height:90vh; overflow-y:auto; }
+  .k-choice { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+  .k-choice button { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:15px 16px; border-radius:11px; border:1px solid var(--line); background:var(--canvas); color:var(--ink); font-size:16px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; }
+  .k-choice button .t { font-family:'Oswald',sans-serif; color:var(--ink-soft); font-weight:500; }
+
   /* ---- Missing weigh-in reminder ---- */
   .weigh.missing { border-color:var(--flag); box-shadow:0 0 0 2px color-mix(in srgb,var(--flag) 22%,transparent); }
   .delta.missing { color:var(--flag); }
@@ -327,7 +347,7 @@
 
   @media (max-width:720px) {
     .scoreboard { grid-template-columns:repeat(2,1fr); }
-    .row { grid-template-columns:1fr; gap:10px; padding:14px 14px; }
+    .row, .row.evrow { grid-template-columns:1fr; gap:10px; padding:14px 14px; }
     .row.head { display:none; }
     .status-group button { padding:8px 0; }
     .weigh-cell { flex-direction:row; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -388,13 +408,15 @@
       <div class="score present"><div class="n" id="cPresent">0</div><div class="l">Present</div></div>
       <div class="score absent"><div class="n" id="cAbsent">0</div><div class="l">Absent</div></div>
       <div class="score excused"><div class="n" id="cExcused">0</div><div class="l">Excused</div></div>
-      <div class="score"><div class="n" id="cWeigh">0</div><div class="l">Weighed In</div></div>
+      <div class="score"><div class="n" id="cWeigh">0</div><div class="l" id="lWeigh">Weighed In</div></div>
     </div>
     <div class="toolbar">
       <div>
         <h2 id="dayTitle">Practice Roster</h2>
+        <div class="agenda" id="agenda"></div>
         <div class="daytag" id="dayTag"></div>
-        <div class="hint">Tap a status, then enter weigh-in. Tap a name to open their profile.</div>
+        <div class="daytag hidden" id="evTag"></div>
+        <div class="hint" id="dayHint">Tap a status, then enter weigh-in. Tap a name to open their profile.</div>
       </div>
       <div class="btn-row">
         <button class="ghost-btn" id="exportDay">Export CSV</button>
@@ -446,6 +468,8 @@
     <p class="msub">Attendance rates count only these days. To cancel or add a single date, use the link under the date on the Daily tab.</p>
     <div class="field"><label>Regular practice days</label><div class="dow-group" id="dowGroup"></div></div>
     <div class="field"><label for="seasonStart">Season start</label><input type="date" id="seasonStart"></div>
+    <div class="field"><label for="practiceTime">Practice time</label><input type="time" id="practiceTime"></div>
+    <div class="field"><label>Other events</label><div class="evlist" id="evList"></div><button class="linkbtn" id="schedAddEv" style="margin-top:8px">+ Add an event</button></div>
     <div class="field"><label>One-off changes</label><div class="ovlist" id="ovList"></div></div>
     <div class="field"><label>Wrestler Mode PIN</label><div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--ink-soft)"><span id="pinState">Not set</span><button class="linkbtn" id="pinChange">Set PIN</button></div></div>
     <div class="modal-actions"><button class="btn-cancel" id="schedCancel">Close</button><button class="btn-save" id="schedSave">Save schedule</button></div>
@@ -454,10 +478,24 @@
 
 <datalist id="reasonList"></datalist>
 
+<div class="scrim" id="evScrim">
+  <div class="modal ev-modal">
+    <h3>Add an event</h3>
+    <p class="msub">Attendance only, no weigh-in. Practice is set by the regular schedule.</p>
+    <div class="field"><label for="evType">Type</label><select id="evType"><option value="lift">Morning lift</option><option value="dual">Dual</option><option value="tournament">Tournament</option><option value="other">Other</option></select></div>
+    <div class="field"><label for="evTitle">Name</label><input id="evTitle" type="text" maxlength="60" placeholder="e.g. Dual vs. Sky View"></div>
+    <div class="field"><label for="evTime">Time</label><input id="evTime" type="time"></div>
+    <div class="field"><label for="evRepeat">Repeats</label><select id="evRepeat"><option value="once">Just one date</option><option value="weekly">Every week</option></select></div>
+    <div class="field" id="evDateWrap"><label for="evDate">Date</label><input id="evDate" type="date"></div>
+    <div class="field hidden" id="evDaysWrap"><label>On these days</label><div class="ev-days" id="evDays"></div></div>
+    <div class="modal-actions"><button class="btn-cancel" id="evCancel">Cancel</button><button class="btn-save" id="evSave">Add event</button></div>
+  </div>
+</div>
+
 <!-- Wrestler Mode (kiosk) -->
 <div class="kiosk hidden" id="kiosk">
   <div class="k-top">
-    <div class="k-brand"><img src="LOGAN.png" alt=""><div><div class="k-title">Practice check-in</div><div class="k-date" id="kDate"></div></div></div>
+    <div class="k-brand"><img src="LOGAN.png" alt=""><div><div class="k-title" id="kTitle">Practice check-in</div><div class="k-date" id="kDate"></div></div></div>
     <button class="k-exit" id="kExit">Coach</button>
   </div>
   <div class="k-body">
@@ -471,13 +509,21 @@
   <div class="k-card">
     <div class="kc-name" id="kName"></div>
     <div class="kc-sub" id="kSub">Step on the scale and enter your weight.</div>
-    <div class="k-wt"><input id="kWeight" type="number" inputmode="decimal" step="0.1" placeholder="000.0" aria-label="Your weight"><span>lb</span></div>
+    <div class="k-wt" id="kWtBox"><input id="kWeight" type="number" inputmode="decimal" step="0.1" placeholder="000.0" aria-label="Your weight"><span>lb</span></div>
     <div class="k-err" id="kErr"></div>
     <div class="k-actions"><button class="k-back" id="kCancel">Back</button><button class="k-go" id="kSubmit">Check in</button></div>
   </div>
 </div>
 <div class="k-sheet hidden" id="kDone">
   <div class="k-card k-done"><div class="kd-check">✓</div><div class="kc-name" id="kDoneName"></div><div class="kc-sub" id="kDoneSub" style="margin-bottom:0"></div></div>
+</div>
+<div class="k-sheet hidden" id="kChoose">
+  <div class="k-card">
+    <div class="kc-name">Which check-in?</div>
+    <div class="kc-sub">There’s more than one event today. Pick the one wrestlers are checking in for.</div>
+    <div class="k-choice" id="kChoiceList"></div>
+    <button class="k-plain" id="kChooseCancel" style="width:100%;margin-top:12px">Cancel</button>
+  </div>
 </div>
 <div class="k-sheet top hidden" id="pinSheet">
   <div class="k-card">
@@ -507,7 +553,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField }
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField, query, where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ============================================================
@@ -518,16 +564,14 @@ import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, o
    ============================================================ */
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBas00F70VFmez6mihDbtqyU1XHL43TwT4",
-  authDomain: "mat-room-beta.firebaseapp.com",
-  projectId: "mat-room-beta",
-  storageBucket: "mat-room-beta.firebasestorage.app",
-  messagingSenderId: "975845942606",
-  appId: "1:975845942606:web:7a306a40e78f37f9ecea1f"
+  apiKey: "AIzaSyC31q19sdSqEIvM8jtHBzCp8_ledvxfOJY",
+  authDomain: "mat-room-tracker.firebaseapp.com",
+  databaseURL: "https://mat-room-tracker-default-rtdb.firebaseio.com",
+  projectId: "mat-room-tracker",
+  storageBucket: "mat-room-tracker.firebasestorage.app",
+  messagingSenderId: "1050736057230",
+  appId: "1:1050736057230:web:5abde8fb15138048a122df"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 
 /* ============================================================
    COACH EMAILS — must match the list in firestore.rules.
@@ -574,7 +618,7 @@ if (NOT_CONFIGURED) {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const fdb = getFirestore(app);
-  startApp(auth, fdb, { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }, COACH_EMAILS, WEIGHT_CLASSES);
+  startApp(auth, fdb, { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField, query, where, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }, COACH_EMAILS, WEIGHT_CLASSES);
 }
 
 function startApp(auth, fdb, fb, coachEmails, weightClasses){
@@ -592,13 +636,17 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   let profileOpenId=null, profileToken=0;
   // Practice schedule (settings/team). Defaults apply until the doc exists.
   // practiceDays uses JS getDay() numbers: 0=Sun ... 6=Sat.
-  let schedule={practiceDays:[1,2,3,4,5], seasonStart:'', overrides:{}};
+  let schedule={practiceDays:[1,2,3,4,5], seasonStart:'', overrides:{}, practiceTime:'15:00', eventTemplates:[], oneOffEvents:[], eventSkips:{}};
   let schedDraft=null;
   // Coach-only absence reasons: privateNotes/{wrestlerId} = { notes: { 'YYYY-MM-DD': 'Sick' } }
   let notes={}, unsubNotes=null, noteTimers={};
   let prevToken=0;
   let kioskPinHash='', kioskOn=false, kSelId=null, kIdle=null, kDoneTimer=null, kDayTimer=null;
-  const KIOSK_KEY='matroom-kiosk';
+  const KIOSK_KEY='matroom-kiosk', KIOSK_EV_KEY='matroom-kiosk-event';
+  // Events (Phase 2). Practice stays in attendance/{date}; other events are attendance-only
+  // and stored in eventCheckins/{date}__{eventKey}__{wrestlerId} = {date, event, wid, status}.
+  let selEvent='practice', evAtt={}, unsubEvAtt=null, kEvent='practice', evDraftDays=[];
+  const EV_TYPES={ practice:{label:'Practice',color:'#b3122b'}, lift:{label:'Morning lift',color:'#2d6cb3'}, dual:{label:'Dual',color:'#8a3fb0'}, tournament:{label:'Tournament',color:'#c77d18'}, other:{label:'Other',color:'#127d7a'} };
   let hydro={}; // coach-only hydration test per wrestler (privateNotes/{id}.hydration)
 
   function todayStr(){ const d=new Date(); const off=d.getTimezoneOffset(); return new Date(d-off*60000).toISOString().slice(0,10); }
@@ -643,6 +691,28 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     const d=r1(cur-hs.min);
     return d>=0 ? {cls:'above', txt:d+' above min'} : {cls:'below', txt:Math.abs(d)+' below min'};
   }
+  // ---- Events ----
+  function fmtTime(t){ if(!t) return ''; const [h,m]=t.split(':').map(Number); const ap=h>=12?'PM':'AM'; return ((h%12)||12)+':'+String(m).padStart(2,'0')+' '+ap; }
+  function newId(p){ return p+Math.random().toString(36).slice(2,9); }
+  // Everything on a date, in time order. cancelled=true for a skipped recurring occurrence.
+  function agendaFor(d){
+    const dow=parseLocal(d).getDay(), list=[];
+    const prac=isPractice(d);
+    list.push({key:'practice', type:'practice', title:'Practice', time:schedule.practiceTime, kind:'practice', off:!prac});
+    (schedule.eventTemplates||[]).forEach(t=>{
+      if(!(t.days||[]).includes(dow) || (t.from && d<t.from)) return;
+      list.push({key:t.id, type:t.type, title:t.title, time:t.time, kind:'recurring', tpl:t, cancelled:!!schedule.eventSkips[d+'__'+t.id]});
+    });
+    (schedule.oneOffEvents||[]).forEach(o=>{ if(o.date===d) list.push({key:o.id, type:o.type, title:o.title, time:o.time, kind:'oneoff', ev:o}); });
+    list.sort((a,b)=>(a.off?1:0)-(b.off?1:0) || (a.time||'99').localeCompare(b.time||'99'));
+    return list;
+  }
+  function eventsOn(d){ return agendaFor(d).filter(e=>!e.off && !e.cancelled); }
+  function defaultEvent(d){ if(isPractice(d)) return 'practice'; const e=eventsOn(d); return e.length?e[0].key:'practice'; }
+  function curEvent(){ return agendaFor(selDate).find(e=>e.key===selEvent) || agendaFor(selDate)[0]; }
+  function evLabel(e){ return e.title || (EV_TYPES[e.type]||EV_TYPES.other).label; }
+  function evStatus(key,wid){ return ((evAtt[key]||{})[wid]||{}).status||null; }
+
   // ---- Practice schedule ----
   function isPractice(d){
     const o=schedule.overrides[d];
@@ -712,8 +782,8 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   function stop(){
     if(!started) return;
     started=false;
-    [unsubRoster, unsubAtt, unsubSettings, unsubNotes].forEach(u=>{ if(u) u(); });
-    unsubRoster=unsubAtt=unsubSettings=unsubNotes=null;
+    [unsubRoster, unsubAtt, unsubSettings, unsubNotes, unsubEvAtt].forEach(u=>{ if(u) u(); });
+    unsubRoster=unsubAtt=unsubSettings=unsubNotes=unsubEvAtt=null; evAtt={};
     if(unsubWeek){ unsubWeek.forEach(u=>u()); unsubWeek=null; }
     roster=[]; attendance={}; weekData={}; prevWeights={}; notes={}; hydro={};
     if(profileOpenId) closeProfile();
@@ -746,6 +816,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   // ---- Data subscriptions ----
   function start(){
     $('#syncText').textContent='Connected';
+    selEvent=defaultEvent(selDate);
     unsubRoster = fb.onSnapshot(rosterCol(), snap=>{
       roster = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
       if(view==='day') renderDaily(); else renderWeek();
@@ -755,7 +826,14 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     unsubSettings = fb.onSnapshot(settingsDoc(), snap=>{
       const d=snap.exists()?snap.data():{};
       schedule={ practiceDays:Array.isArray(d.practiceDays)?d.practiceDays:[1,2,3,4,5], seasonStart:d.seasonStart||'', overrides:d.overrides||{} };
+      schedule.practiceTime=d.practiceTime||'15:00';
+      schedule.eventTemplates=Array.isArray(d.eventTemplates)?d.eventTemplates:[];
+      schedule.oneOffEvents=Array.isArray(d.oneOffEvents)?d.oneOffEvents:[];
+      schedule.eventSkips=d.eventSkips||{};
       kioskPinHash=d.kioskPinHash||''; renderPinState();
+      if(!agendaFor(selDate).some(e=>e.key===selEvent)) selEvent=defaultEvent(selDate);
+      if(view==='day') renderDaily();
+      if($('#schedScrim').classList.contains('open')) renderEvList();
       if(kioskOn) renderKiosk();
       renderDayTag(); if(view==='week') renderWeek();
       if($('#schedScrim').classList.contains('open')) renderOverrides();
@@ -777,9 +855,30 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     unsubAtt=null; if(!started) return;
     attendance={};
     unsubAtt = fb.onSnapshot(attCol(selDate), snap=>{
-      attendance={}; snap.docs.forEach(d=>attendance[d.id]=d.data()); patchDaily(); if(kioskOn) renderKiosk();
+      attendance={}; snap.docs.forEach(d=>attendance[d.id]=d.data()); if(selEvent==='practice') patchDaily(); if(kioskOn) renderKiosk();
     }, ()=>{});
+    if(unsubEvAtt) unsubEvAtt();
+    evAtt={};
+    unsubEvAtt = fb.onSnapshot(fb.query(fb.collection(fdb,'eventCheckins'), fb.where('date','==',selDate)), snap=>{
+      evAtt={};
+      snap.docs.forEach(x=>{ const v=x.data(); if(v.event&&v.wid&&v.status) (evAtt[v.event]=evAtt[v.event]||{})[v.wid]={status:v.status}; });
+      if(view==='day' && selEvent!=='practice') patchEvent();
+      if(kioskOn) renderKiosk();
+    }, err=>{ if(err&&err.code==='permission-denied') banner('Event attendance needs the updated Firestore rules (eventCheckins). See the README.', true); });
     loadPrevWeights();
+  }
+  const evDocRef=(d,key,wid)=>fb.doc(fdb,'eventCheckins',d+'__'+key+'__'+wid);
+  function writeEvStatus(d,key,wid,status){
+    if(!canEdit) return Promise.reject();
+    (evAtt[key]=evAtt[key]||{});
+    if(status) evAtt[key][wid]={status}; else delete evAtt[key][wid];
+    const ref=evDocRef(d,key,wid);
+    return status ? fb.setDoc(ref,{date:d, event:key, wid, status, updated:Date.now()}) : fb.deleteDoc(ref);
+  }
+  function setEvStatus(wid,status){
+    const key=selEvent, cur=evStatus(key,wid), next=cur===status?null:status;
+    writeEvStatus(selDate,key,wid,next).catch(()=>banner('Could not save event attendance. Check that the updated Firestore rules are published.',true));
+    patchEvent();
   }
   function loadPrevWeights(){
     prevWeights={};
@@ -897,6 +996,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   }
   // Surgical update after an attendance snapshot: never rebuild rows, never touch a focused input.
   function patchDaily(){
+    if(selEvent!=='practice') return;
     if(roster.length===0) return renderDaily();
     for(const r of roster){ if(!document.querySelector('.row[data-id="'+r.id+'"]')) return renderDaily(); }
     roster.forEach(r=>{
@@ -919,13 +1019,89 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
       else if(p) html+=`<button class="linkbtn" data-ov="cancel">Cancel this practice</button>`;
       else html+=`<button class="linkbtn" data-ov="add">Make this a practice day</button>`;
     }
-    el.className='daytag'+(p?'':' off'); el.innerHTML=html;
+    el.className='daytag'+(p?'':' off')+(selEvent!=='practice'?' hidden':''); el.innerHTML=html;
     const b=el.querySelector('[data-ov]');
     if(b) b.onclick=()=>{ const k=b.dataset.ov; setOverride(selDate, k==='reset'?null:(k==='add')); };
   }
 
+  function renderAgenda(){
+    const el=$('#agenda'); const list=agendaFor(selDate);
+    let html=list.map(e=>{
+      const t=EV_TYPES[e.type]||EV_TYPES.other, dim=e.off||e.cancelled;
+      const sub = e.off ? 'not scheduled' : e.cancelled ? 'cancelled' : fmtTime(e.time);
+      return `<button class="ag-chip ${e.key===selEvent?'on':''} ${dim?'dim':''}" data-ev="${e.key}"><span class="dot" style="background:${t.color}"></span><span class="nm">${escapeHtml(evLabel(e))}</span><span class="t">${sub}</span></button>`;
+    }).join('');
+    if(canEdit) html+=`<button class="linkbtn" id="agAdd">+ Add event</button>`;
+    el.innerHTML=html;
+    el.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{ selEvent=b.dataset.ev; renderDaily(); });
+    const add=$('#agAdd'); if(add) add.onclick=()=>openEventModal(selDate);
+  }
+  function renderEvTag(e){
+    const el=$('#evTag');
+    let html=`<span class="pill">${escapeHtml(evLabel(e))}${e.time?', '+fmtTime(e.time):''}</span>`;
+    if(e.kind==='recurring'){
+      const days=DOW.filter(([n])=>(e.tpl.days||[]).includes(n)).map(([,l])=>l).join(', ');
+      html+= e.cancelled ? `<span>Cancelled for this date.</span>` : `<span>Every week: ${days}. Attendance only.</span>`;
+      if(canEdit) html+= e.cancelled ? `<button class="linkbtn" data-evact="restore">Restore</button>` : `<button class="linkbtn" data-evact="skip">Cancel this date</button>`;
+    } else {
+      html+=`<span>${escapeHtml((EV_TYPES[e.type]||EV_TYPES.other).label)}. Attendance only.</span>`;
+      if(canEdit) html+=`<button class="linkbtn" data-evact="remove">Remove event</button>`;
+    }
+    el.className='daytag'+(e.cancelled?' off':''); el.innerHTML=html;
+    const b=el.querySelector('[data-evact]');
+    if(b) b.onclick=()=>{
+      const a=b.dataset.evact;
+      if(a==='skip') saveSettings({eventSkips:{[selDate+'__'+e.key]:true}});
+      else if(a==='restore') saveSettings({eventSkips:{[selDate+'__'+e.key]:fb.deleteField()}});
+      else if(a==='remove' && confirm('Remove '+evLabel(e)+' on '+shortDate(selDate)+'? Its check-ins stay saved.')) removeOneOff(e.key);
+    };
+  }
+  function saveSettings(obj){ return fb.setDoc(settingsDoc(), obj, {merge:true}).catch(()=>banner('Could not save the schedule.',true)); }
+  function removeOneOff(id){ selEvent=defaultEvent(selDate); return saveSettings({oneOffEvents:(schedule.oneOffEvents||[]).filter(o=>o.id!==id)}); }
+  function removeTemplate(id){ return saveSettings({eventTemplates:(schedule.eventTemplates||[]).filter(t=>t.id!==id)}); }
+  function renderEventRoster(e){
+    const el=$('#roster');
+    $('#missBar').classList.add('hidden');
+    if(!roster.length){ el.innerHTML=`<div class="empty"><p>No wrestlers yet.</p></div>`; updateEventCounts(); return; }
+    const dis=(canEdit&&!e.cancelled)?'':'disabled';
+    let rows=`<div class="row head evrow"><div>Wrestler</div><div>Attendance</div></div>`;
+    roster.forEach(r=>{
+      const st=evStatus(e.key,r.id);
+      rows+=`<div class="row evrow" data-eid="${r.id}">
+        <div class="wrestler clickable" data-profile="${r.id}" title="Open profile"><div class="avatar" style="background:${colorFor(r.id)}">${initials(r.name)}</div><div style="min-width:0"><div class="wname">${escapeHtml(r.name)}<span class="chev">›</span></div>${r.wclass?`<div class="wclass">${escapeHtml(r.wclass)} lb class</div>`:''}</div></div>
+        <div class="status-group ${dis?'ro':''}">${STATUSES.map(s=>`<button data-evs="${s}" ${st===s?`data-on="${s}"`:''} ${dis}>${s[0].toUpperCase()+s.slice(1)}</button>`).join('')}</div>
+      </div>`;
+    });
+    el.innerHTML=rows;
+    el.querySelectorAll('.row[data-eid]').forEach(row=>{
+      const id=row.dataset.eid;
+      row.querySelectorAll('[data-evs]').forEach(btn=>btn.onclick=()=>setEvStatus(id,btn.dataset.evs));
+      row.querySelector('[data-profile]').onclick=()=>openProfile(id);
+    });
+    updateEventCounts();
+  }
+  function patchEvent(){
+    const e=curEvent(); if(!e||e.key==='practice') return;
+    const rows=document.querySelectorAll('.row[data-eid]');
+    if(rows.length!==roster.length) return renderEventRoster(e);
+    rows.forEach(row=>{ const st=evStatus(e.key,row.dataset.eid); row.querySelectorAll('[data-evs]').forEach(b=>{ if(b.dataset.evs===st) b.setAttribute('data-on',st); else b.removeAttribute('data-on'); }); });
+    updateEventCounts();
+  }
+  function updateEventCounts(){
+    let p=0,a=0,x=0,u=0;
+    roster.forEach(r=>{ const st=evStatus(selEvent,r.id); if(st==='present')p++; else if(st==='absent')a++; else if(st==='excused')x++; else u++; });
+    $('#cPresent').textContent=p; $('#cAbsent').textContent=a; $('#cExcused').textContent=x; $('#cWeigh').textContent=u;
+  }
   function renderDaily(){
     $('#dayTitle').textContent=prettyDate(selDate);
+    renderAgenda();
+    const ev=curEvent(); if(ev) selEvent=ev.key;
+    const isPrac=selEvent==='practice';
+    $('#dayTag').classList.toggle('hidden', !isPrac);
+    $('#evTag').classList.toggle('hidden', isPrac);
+    $('#lWeigh').textContent = isPrac ? 'Weighed In' : 'Unmarked';
+    $('#dayHint').textContent = isPrac ? 'Tap a status, then enter weigh-in. Tap a name to open their profile.' : 'Tap a status. No weigh-in for this event.';
+    if(!isPrac){ renderEvTag(ev); renderEventRoster(ev); return; }
     renderDayTag();
     const el=$('#roster');
     if(roster.length===0){
@@ -1310,6 +1486,11 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   }
 
   function exportDayCSV(){
+    if(selEvent!=='practice'){
+      const e=curEvent(), rows=[['Date','Event','Type','Time','Wrestler','Weight Class','Status']];
+      roster.forEach(r=>rows.push([selDate, evLabel(e), (EV_TYPES[e.type]||EV_TYPES.other).label, fmtTime(e.time), r.name, r.wclass||'', evStatus(e.key,r.id)||'']));
+      return downloadCSV(rows, 'event_'+selDate+'_'+evLabel(e).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.csv');
+    }
     const hdr=['Date','Practice Day','Wrestler','Weight Class','Status','Weight (lb)','Change vs Last','Vs Class'];
     if(canEdit) hdr.push('Min Weight','Vs Min','Absence Reason');
     const rows=[hdr];
@@ -1355,32 +1536,57 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     st.textContent = kioskPinHash ? 'PIN is set' : 'Not set';
     b.textContent = kioskPinHash ? 'Change PIN' : 'Set PIN';
   }
+  function kioskOptions(){ return eventsOn(todayStr()); }
+  function chooseKioskEvent(cb){
+    const opts=kioskOptions();
+    if(opts.length<=1){ cb(opts.length?opts[0].key:'practice'); return; }
+    $('#kChoiceList').innerHTML=opts.map(e=>`<button data-kc="${e.key}"><span>${escapeHtml(evLabel(e))}</span><span class="t">${fmtTime(e.time)}</span></button>`).join('');
+    $('#kChoiceList').querySelectorAll('[data-kc]').forEach(b=>b.onclick=()=>{ $('#kChoose').classList.add('hidden'); cb(b.dataset.kc); });
+    $('#kChoose').classList.remove('hidden');
+  }
   function enterKiosk(resume){
     if(!canEdit) return;
     if(!kioskPinHash && !resume){ askPin('set', ()=>enterKiosk()); return; }
+    if(!resume){ chooseKioskEvent(k=>startKiosk(k)); return; }
+    const saved=lsGet(KIOSK_EV_KEY);
+    startKiosk(kioskOptions().some(e=>e.key===saved) ? saved : defaultEvent(todayStr()));
+  }
+  function startKiosk(evKey){
+    kEvent=evKey||'practice'; lsSet(KIOSK_EV_KEY,kEvent);
     if(profileOpenId) closeProfile();
     $('#schedScrim').classList.remove('open'); $('#scrim').classList.remove('open');
     if(view!=='day') setView('day');
     if(selDate!==todayStr()) changeDate(todayStr());
+    selEvent=kEvent; renderDaily();
     kioskOn=true; lsSet(KIOSK_KEY,'1');
     $('#kiosk').classList.remove('hidden');
     $('#kSearch').value='';
     renderKiosk();
     clearInterval(kDayTimer);
-    kDayTimer=setInterval(()=>{ if(kioskOn && selDate!==todayStr()){ changeDate(todayStr()); renderKiosk(); } }, 60000);
+    kDayTimer=setInterval(()=>{ if(kioskOn && selDate!==todayStr()){
+      changeDate(todayStr());
+      if(!kioskOptions().some(e=>e.key===kEvent)){ kEvent=defaultEvent(todayStr()); lsSet(KIOSK_EV_KEY,kEvent); }
+      selEvent=kEvent; renderDaily(); renderKiosk();
+    } }, 60000);
   }
   function hideKioskUI(){
     kioskOn=false; kSelId=null; clearTimeout(kIdle); clearTimeout(kDoneTimer); clearInterval(kDayTimer);
-    ['#kiosk','#kSheet','#kDone','#pinSheet'].forEach(id=>$(id).classList.add('hidden'));
+    ['#kiosk','#kSheet','#kDone','#pinSheet','#kChoose'].forEach(id=>$(id).classList.add('hidden'));
   }
-  function exitKiosk(){ hideKioskUI(); lsSet(KIOSK_KEY,null); renderDaily(); }
-  function kCheckedIn(id){ const rec=attendance[id]||{}; return rec.status==='present' && validW(rec.weight); }
+  function exitKiosk(){ hideKioskUI(); lsSet(KIOSK_KEY,null); lsSet(KIOSK_EV_KEY,null); renderDaily(); }
+  function kIsPractice(){ return kEvent==='practice'; }
+  function kCheckedIn(id){
+    if(!kIsPractice()) return evStatus(kEvent,id)==='present';
+    const rec=attendance[id]||{}; return rec.status==='present' && validW(rec.weight);
+  }
   function renderKiosk(){
     if(!kioskOn) return;
-    $('#kDate').textContent=prettyDate(selDate);
-    const note=$('#kNote'), prac=isPractice(selDate);
-    note.classList.toggle('hidden', prac);
-    if(!prac) note.textContent='Today isn’t on the practice schedule. Check-ins still save, and a coach can make today a practice day.';
+    const ke=agendaFor(selDate).find(e=>e.key===kEvent);
+    $('#kTitle').textContent=(kIsPractice()?'Practice':(ke?evLabel(ke):'Event'))+' check-in';
+    $('#kDate').textContent=prettyDate(selDate)+(ke&&ke.time?', '+fmtTime(ke.time):'');
+    const note=$('#kNote'), showNote=kIsPractice() && !isPractice(selDate);
+    note.classList.toggle('hidden', !showNote);
+    if(showNote) note.textContent='Today isn’t on the practice schedule. Check-ins still save, and a coach can make today a practice day.';
     const q=$('#kSearch').value.trim().toLowerCase();
     const list=roster.filter(r=>!q || (r.name||'').toLowerCase().includes(q));
     const g=$('#kGrid');
@@ -1397,15 +1603,31 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     const r=roster.find(x=>x.id===id); if(!r) return;
     kSelId=id;
     $('#kName').textContent=r.name;
-    $('#kSub').textContent = kCheckedIn(id) ? 'You’re already checked in. Enter your weight again only if it was wrong.' : 'Step on the scale and enter your weight.';
+    const prac=kIsPractice(), done=kCheckedIn(id);
+    $('#kWtBox').classList.toggle('hidden', !prac);
+    if(prac) $('#kSub').textContent = done ? 'You’re already checked in. Enter your weight again only if it was wrong.' : 'Step on the scale and enter your weight.';
+    else $('#kSub').textContent = done ? 'You’re already checked in. You’re all set.' : 'Tap below to check in.';
+    $('#kSubmit').textContent = prac ? 'Check in' : 'I’m here';
+    $('#kSubmit').classList.toggle('hidden', !prac && done);
     $('#kWeight').value=''; $('#kErr').textContent=''; $('#kSubmit').disabled=false;
     $('#kSheet').classList.remove('hidden');
-    setTimeout(()=>$('#kWeight').focus(), 50);
+    if(prac) setTimeout(()=>$('#kWeight').focus(), 50);
     kResetIdle();
   }
   function kClose(){ kSelId=null; clearTimeout(kIdle); $('#kSheet').classList.add('hidden'); }
   async function kSubmit(){
     const id=kSelId; if(!id) return;
+    if(!kIsPractice()){
+      $('#kSubmit').disabled=true;
+      try{ await writeEvStatus(selDate,kEvent,id,'present'); }
+      catch(e){ $('#kErr').textContent='Couldn’t save. Ask a coach for help.'; $('#kSubmit').disabled=false; return; }
+      const r=roster.find(x=>x.id===id), ke=agendaFor(selDate).find(e=>e.key===kEvent);
+      kClose(); $('#kSearch').value='';
+      $('#kDoneName').textContent=r?r.name:''; $('#kDoneSub').textContent='You’re checked in for '+(ke?evLabel(ke):'this event')+'.';
+      $('#kDone').classList.remove('hidden'); renderKiosk();
+      clearTimeout(kDoneTimer); kDoneTimer=setTimeout(()=>$('#kDone').classList.add('hidden'), 2200);
+      return;
+    }
     const w=parseFloat($('#kWeight').value);
     if(isNaN(w) || w<60 || w>400){ $('#kErr').textContent='That doesn’t look right. Check the scale and try again.'; $('#kWeight').focus(); return; }
     const wt=Math.round(w*10)/10, d=selDate, cur=attendance[id]||{};
@@ -1472,7 +1694,8 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     renderPinState();
     schedDraft={days:[...schedule.practiceDays]};
     $('#seasonStart').value=schedule.seasonStart||'';
-    renderDow(); renderOverrides();
+    $('#practiceTime').value=schedule.practiceTime||'15:00';
+    renderDow(); renderOverrides(); renderEvList();
     $('#schedScrim').classList.add('open');
   }
   function closeSchedule(){ $('#schedScrim').classList.remove('open'); schedDraft=null; }
@@ -1492,11 +1715,60 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     el.innerHTML=keys.map(k=>`<div class="ovrow"><span>${escapeHtml(shortDate(k))}</span><span class="ovk ${schedule.overrides[k]?'add':'cancel'}">${schedule.overrides[k]?'Added':'Cancelled'}</span><button class="linkbtn" data-rm="${k}">Remove</button></div>`).join('');
     el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>setOverride(b.dataset.rm,null));
   }
+  function renderEvList(){
+    const el=$('#evList'); if(!el) return;
+    const today=todayStr();
+    const tpls=(schedule.eventTemplates||[]).slice().sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const ones=(schedule.oneOffEvents||[]).filter(o=>o.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    if(!tpls.length && !ones.length){ el.innerHTML='<div class="ovempty">No lifts, duals, or tournaments yet.</div>'; return; }
+    const dayNames=t=>DOW.filter(([n])=>(t.days||[]).includes(n)).map(([,l])=>l).join(', ');
+    el.innerHTML = tpls.map(t=>`<div class="ovrow"><span><b>${escapeHtml(evLabel(t))}</b><br><span style="font-size:12px;color:var(--ink-soft)">Every ${dayNames(t)}, ${fmtTime(t.time)}</span></span><button class="linkbtn" data-rmt="${t.id}">Remove</button></div>`).join('')
+      + ones.map(o=>`<div class="ovrow"><span><b>${escapeHtml(evLabel(o))}</b><br><span style="font-size:12px;color:var(--ink-soft)">${escapeHtml(shortDate(o.date))}, ${fmtTime(o.time)}</span></span><button class="linkbtn" data-rmo="${o.id}">Remove</button></div>`).join('');
+    el.querySelectorAll('[data-rmt]').forEach(b=>b.onclick=()=>{ const t=tpls.find(x=>x.id===b.dataset.rmt); if(confirm('Stop repeating '+evLabel(t)+'? Past check-ins stay saved.')) removeTemplate(b.dataset.rmt); });
+    el.querySelectorAll('[data-rmo]').forEach(b=>b.onclick=()=>{ const o=ones.find(x=>x.id===b.dataset.rmo); if(confirm('Remove '+evLabel(o)+' on '+shortDate(o.date)+'?')) removeOneOff(b.dataset.rmo); });
+  }
+  // ---- Add-event modal ----
+  let evTitleTouched=false;
+  function openEventModal(date){
+    if(!canEdit) return;
+    const d=date||todayStr();
+    $('#evType').value='lift'; $('#evTitle').value='Morning lift'; evTitleTouched=false;
+    $('#evTime').value='06:30'; $('#evRepeat').value='once'; $('#evDate').value=d;
+    evDraftDays=[parseLocal(d).getDay()]; drawEvDays(); syncEvRepeat();
+    $('#evScrim').classList.add('open');
+  }
+  function drawEvDays(){
+    const g=$('#evDays');
+    g.innerHTML=DOW.map(([n,l])=>`<button type="button" data-evd="${n}" aria-pressed="${evDraftDays.includes(n)}">${l}</button>`).join('');
+    g.querySelectorAll('[data-evd]').forEach(b=>b.onclick=()=>{ const n=+b.dataset.evd, i=evDraftDays.indexOf(n); if(i>=0) evDraftDays.splice(i,1); else evDraftDays.push(n); b.setAttribute('aria-pressed', evDraftDays.includes(n)); });
+  }
+  function syncEvRepeat(){ const w=$('#evRepeat').value==='weekly'; $('#evDaysWrap').classList.toggle('hidden',!w); $('#evDateWrap').querySelector('label').textContent = w ? 'Starting' : 'Date'; }
+  async function saveEvent(){
+    const type=$('#evType').value, title=$('#evTitle').value.trim()||EV_TYPES[type].label, time=$('#evTime').value, date=$('#evDate').value;
+    if(!time){ $('#evTime').focus(); return; }
+    if(!date){ $('#evDate').focus(); return; }
+    let obj, key;
+    if($('#evRepeat').value==='weekly'){
+      if(!evDraftDays.length){ banner('Pick at least one day for a weekly event.', true); return; }
+      key=newId('t'); obj={eventTemplates:[...(schedule.eventTemplates||[]), {id:key, type, title, time, days:[...evDraftDays].sort(), from:date}]};
+    } else {
+      key=newId('o'); obj={oneOffEvents:[...(schedule.oneOffEvents||[]), {id:key, type, title, time, date}]};
+    }
+    $('#evSave').disabled=true;
+    try{
+      await fb.setDoc(settingsDoc(), obj, {merge:true});
+      $('#evScrim').classList.remove('open');
+      if(date===selDate || ($('#evRepeat').value==='weekly' && evDraftDays.includes(parseLocal(selDate).getDay()) && selDate>=date)) selEvent=key;
+      banner(title+' added.');
+    } catch(e){ banner('Could not add the event.', true); }
+    finally{ $('#evSave').disabled=false; }
+  }
+
   async function saveSchedule(){
     if(!canEdit||!schedDraft) return;
     const btn=$('#schedSave'); btn.disabled=true;
     try{
-      await fb.setDoc(settingsDoc(), {practiceDays:[...schedDraft.days].sort(), seasonStart:$('#seasonStart').value||''}, {merge:true});
+      await fb.setDoc(settingsDoc(), {practiceDays:[...schedDraft.days].sort(), seasonStart:$('#seasonStart').value||'', practiceTime:$('#practiceTime').value||'15:00'}, {merge:true});
       closeSchedule(); banner('Practice schedule saved.');
       if(profileOpenId) renderProfile(profileOpenId);
     } catch(e){ banner('Could not save the schedule. Check that the updated Firestore rules are published.',true); }
@@ -1504,7 +1776,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   }
 
   function syncDateInput(){ $('#dateInput').value=selDate; }
-  function changeDate(nd){ selDate=nd; syncDateInput(); watchDate(); renderDaily(); }
+  function changeDate(nd){ selDate=nd; selEvent=defaultEvent(nd); syncDateInput(); watchDate(); renderDaily(); }
   function shiftDate(n){ changeDate(addDays(selDate,n)); }
   function setView(v){
     view=v;
@@ -1528,6 +1800,17 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   scrim.onclick=e=>{ if(e.target===scrim) scrim.classList.remove('open'); };
   $('#saveAdd').onclick=()=>{ const n=$('#fName').value.trim(); if(!n){$('#fName').focus();return;} addWrestler(n,$('#fClass').value.trim()); scrim.classList.remove('open'); };
   $('#fName').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();}; $('#fClass').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();};
+
+  // Event modal wiring
+  $('#evCancel').onclick=()=>$('#evScrim').classList.remove('open');
+  $('#evScrim').onclick=e=>{ if(e.target.id==='evScrim') $('#evScrim').classList.remove('open'); };
+  $('#evSave').onclick=saveEvent;
+  $('#evRepeat').onchange=syncEvRepeat;
+  $('#evTitle').oninput=()=>{ evTitleTouched=true; };
+  $('#evType').onchange=()=>{ const t=$('#evType').value; if(!evTitleTouched) $('#evTitle').value = t==='lift'?'Morning lift':t==='other'?'':EV_TYPES[t].label; if(t!=='lift' && $('#evTime').value==='06:30') $('#evTime').value=''; };
+  $('#evDate').onchange=()=>{ const d=$('#evDate').value; if(d && $('#evRepeat').value==='once'){ evDraftDays=[parseLocal(d).getDay()]; drawEvDays(); } };
+  $('#schedAddEv').onclick=()=>openEventModal(todayStr());
+  $('#kChooseCancel').onclick=()=>$('#kChoose').classList.add('hidden');
 
   // Wrestler Mode wiring
   $('#kioskBtn').onclick=()=>enterKiosk();
