@@ -301,6 +301,26 @@
   .ready-row b { font-family:'Oswald',sans-serif; font-weight:600; font-size:15px; white-space:nowrap; }
   .ready-row .rr { color:var(--ink-soft); font-size:12.5px; }
   .dash-load { padding:40px 20px; text-align:center; color:var(--ink-soft); }
+  .ab-tools { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin:4px 0 14px; }
+  .ab-tools label { font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); font-weight:600; margin-right:6px; }
+  .ab-tools select { padding:6px 9px; }
+  .ab-list { display:flex; flex-direction:column; gap:2px; }
+  .ab-row { display:grid; grid-template-columns:minmax(120px,190px) 1fr 74px; gap:12px; align-items:center; padding:6px 4px; border-radius:7px; cursor:pointer; }
+  .ab-row:hover { background:var(--canvas); }
+  .ab-name { min-width:0; }
+  .ab-name b { display:block; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ab-name small { font-size:11px; color:var(--ink-soft); }
+  .ab-track { position:relative; height:20px; background:var(--line); border-radius:5px; overflow:visible; }
+  .ab-fill { height:100%; border-radius:5px; }
+  .ab-stack { display:flex; height:100%; border-radius:5px; overflow:hidden; }
+  .ab-stack div { height:100%; }
+  .ab-avg { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--ink); opacity:.55; }
+  .ab-val { text-align:right; font-family:'Oswald',sans-serif; font-size:16px; font-weight:600; line-height:1.05; }
+  .ab-val small { display:block; font-family:'Inter',sans-serif; font-size:10.5px; color:var(--ink-soft); font-weight:500; }
+  .ab-none { font-size:12px; color:var(--ink-soft); font-style:italic; }
+  .ab-legend { display:flex; flex-wrap:wrap; gap:8px 16px; font-size:12px; color:var(--ink-soft); margin-top:12px; }
+  .ab-legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  @media (max-width:560px){ .ab-row { grid-template-columns:96px 1fr 58px; gap:8px; } .ab-name b { font-size:12.5px; } .ab-val { font-size:14px; } }
   .dash-sec .pchart { max-width:640px; display:block; }
   @media (max-width:820px){ .dash-grid { grid-template-columns:1fr; } }
   @media (max-width:560px){ .dash-cards { grid-template-columns:1fr 1fr; gap:10px; } .dash-card { padding:12px 13px; } .dash-card .dn { font-size:25px; } .dash-sec { padding:14px; } }
@@ -624,12 +644,12 @@
     <div class="toolbar">
       <div>
         <h2>Dashboard</h2>
-        <div class="hint">Season data loads once when you open this tab. Tap Refresh after fixing past attendance or weigh-ins.</div>
+        <div class="hint">Attendance for every wrestler, using the same counting as profiles and the Weekly tab. Tap a wrestler to open their profile. Tap Refresh after fixing past attendance.</div>
       </div>
       <div class="btn-row"><button class="ghost-btn" id="dashRefresh">Refresh</button><button class="ghost-btn" id="dashExport">Export report</button></div>
     </div>
     <div class="lu-controls">
-      <div class="field"><label for="dashRange">Range</label><select id="dashRange"><option value="week">This week</option><option value="30">Last 30 days</option><option value="season">Season</option></select></div>
+      <div class="field"><label for="dashRange">Range</label><select id="dashRange"><option value="season">Season</option><option value="30">Last 30 days</option><option value="week">This week</option></select></div>
     </div>
     <div id="dashBody"><div class="dash-load">Loading season data…</div></div>
   </div>
@@ -838,16 +858,18 @@ const APP_VERSION = '1.7';
    DASHBOARD SECTIONS — set any to false to hide that section.
    ============================================================ */
 const DASHBOARD_FEATURES = {
-  snapshot:         true,  // headline numbers across the top
-  attendanceChart:  true,  // team attendance by week
-  needsAttention:   true,  // low attendance / recent absences, with reasons
-  streaks:          true,  // top attenders and current streaks
-  weightMovers:     true,  // biggest weight changes over 2 or 4 weeks
-  weightDistribution: true,// how far the team is from their classes
-  weightChart:      true,  // season weight chart for any wrestler
-  compliance:       true,  // weigh-in compliance at practice
-  readiness:        true,  // open varsity spots, missing hydration tests
-  reportExport:     true   // season report CSV
+  attendanceByWrestler: true,  // season attendance bar for every wrestler
+  reportExport:         true,  // "Export report" spreadsheet
+  // Earlier dashboard widgets (off for now; set to true to bring any back)
+  snapshot:           false,  // headline numbers across the top
+  attendanceChart:    false,  // team attendance by week
+  needsAttention:     false,  // low attendance / recent absences, with reasons
+  streaks:            false,  // top attenders and current streaks
+  weightMovers:       false,  // biggest weight changes over 2 or 4 weeks
+  weightDistribution: false,  // how far the team is from their classes
+  weightChart:        false,  // season weight chart for any wrestler
+  compliance:         false,  // weigh-in compliance at practice
+  readiness:          false   // open varsity spots, missing hydration tests
 };
 
 /* ============================================================
@@ -943,7 +965,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   // Lineup: latest weigh-in per wrestler from the last LINEUP_SCAN_DAYS days.
   const LINEUP_SCAN_DAYS=30, LINEUP_STALE_DAYS=14, MAX_EXTRAS=8;
   const LINEUP_NEAR_LB=3, LINEUP_REACH_LB=5, LINEUP_UP_LB=10; // amber band, "who can make it" reach, how far under counts as moving up
-  let dashDays={}, dashLoaded=false, dashLoading=false, dashTok=0, dashRange='30', dashMover=14, dashWid='', dashProg='';
+  let dashDays={}, dashLoaded=false, dashLoading=false, dashTok=0, dashRange='season', dashSort='high', dashMode='pct', dashMover=14, dashWid='', dashProg='';
   let luHist={}, luDays={}, luLoaded=false, luLoading=false, luToken=0, luEditId=null, luFilter='all', whoCls=null, savedLineups=[];
   let hydro={}; // coach-only hydration test per wrestler (privateNotes/{id}.hydration)
 
@@ -1351,12 +1373,6 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
       if(view==='dash' && !dashLoaded) renderDash();
     }
     dashDays=days; dashLoaded=true; dashLoading=false;
-    // Reuse the same data for the Lineup tab if it hasn't loaded yet.
-    if(!luLoaded){
-      const hist={}, ld={}, from=addDays(todayStr(),-(LINEUP_SCAN_DAYS-1));
-      Object.keys(days).filter(d=>d>=from).sort().forEach(d=>{ ld[d]=days[d]; Object.keys(days[d]).forEach(id=>{ const v=days[d][id]; if(validW(v.weight)) (hist[id]=hist[id]||[]).push({date:d, weight:v.weight}); }); });
-      luHist=hist; luDays=ld; luLoaded=true;
-    }
     if(view==='dash') renderDash();
   }
   function barChart(items){
@@ -1400,6 +1416,38 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
       </div>`;
     }
     html+='<div class="dash-grid">';
+    // ---- Attendance by wrestler ----
+    if(DF.attendanceByWrestler){
+      const avg=teamRate(days,data);
+      let rows=roster.map(w=>({w, s:stats[w.id]}));
+      const byName=(a,b)=>(a.w.name||'').localeCompare(b.w.name||'');
+      if(dashSort==='high') rows.sort((a,b)=>(b.s.pct??-1)-(a.s.pct??-1) || b.s.attended-a.s.attended || byName(a,b));
+      else if(dashSort==='low') rows.sort((a,b)=>(a.s.pct??101)-(b.s.pct??101) || byName(a,b));
+      else if(dashSort==='class') rows.sort((a,b)=>(targetOf(a.w)??9999)-(targetOf(b.w)??9999) || byName(a,b));
+      else rows.sort(byName);
+      const band=p=>p>=90?'var(--present)':p>=75?'#c9a227':'var(--absent)';
+      const list=rows.map(({w,s})=>{
+        let bar, val;
+        if(s.pct==null){ bar=`<span class="ab-none">No counted practices yet</span>`; val='—'; }
+        else if(dashMode==='pct'){
+          bar=`<div class="ab-track"><div class="ab-fill" style="width:${s.pct}%;background:${band(s.pct)}"></div>${avg!=null?`<div class="ab-avg" style="left:calc(${avg}% - 1px)" title="Team average ${avg}%"></div>`:''}</div>`;
+          val=`${s.pct}%<small>${s.attended} of ${s.counted}</small>`;
+        } else {
+          const tot=s.counted+s.excused||1, seg=(n,c,l)=>n?`<div style="width:${n/tot*100}%;background:${c}" title="${l}: ${n}"></div>`:'';
+          bar=`<div class="ab-track"><div class="ab-stack">${seg(s.attended,'var(--present)','Present')}${seg(s.absent,'var(--absent)','Absent')}${seg(s.unmarked,'#8a96a3','Unmarked')}${seg(s.excused,'var(--excused)','Excused')}</div></div>`;
+          val=`${s.pct}%<small>${s.attended}P ${s.absent}A ${s.excused}E${s.unmarked?' '+s.unmarked+'U':''}</small>`;
+        }
+        return `<div class="ab-row" data-dp="${w.id}" title="${escapeHtml(w.name)}"><div class="ab-name"><b>${escapeHtml(w.name)}</b><small>${w.wclass?escapeHtml(w.wclass)+' lb':'No class'}${w.lineupRole?', '+roleLong(w.lineupRole):''}</small></div>${bar}<div class="ab-val">${val}</div></div>`;
+      }).join('');
+      const legend = dashMode==='pct'
+        ? `<span><i style="background:var(--present)"></i>90% and up</span><span><i style="background:#c9a227"></i>75–89%</span><span><i style="background:var(--absent)"></i>Under 75%</span>${avg!=null?`<span><i style="background:var(--ink);opacity:.55;width:3px"></i>Team average ${avg}%</span>`:''}`
+        : `<span><i style="background:var(--present)"></i>Present</span><span><i style="background:var(--absent)"></i>Absent</span><span><i style="background:#8a96a3"></i>Unmarked (counts as missed)</span><span><i style="background:var(--excused)"></i>Excused (doesn’t count against)</span>`;
+      html+=`<div class="dash-sec wide"><h3>Attendance by wrestler</h3><div class="dsub">Counted practices attended, ${rl}.${avg!=null?` Team average <b>${avg}%</b>.`:''}</div>
+        <div class="ab-tools"><span><label for="abSort">Sort</label><select id="abSort"><option value="high" ${dashSort==='high'?'selected':''}>Highest first</option><option value="low" ${dashSort==='low'?'selected':''}>Lowest first</option><option value="name" ${dashSort==='name'?'selected':''}>Name</option><option value="class" ${dashSort==='class'?'selected':''}>Weight class</option></select></span>
+        <span class="seg"><button data-abm="pct" class="${dashMode==='pct'?'on':''}">Percent</button><button data-abm="breakdown" class="${dashMode==='breakdown'?'on':''}">Breakdown</button></span></div>
+        ${roster.length?`<div class="ab-list">${list}</div>`:'<div class="dempty">No wrestlers on the roster yet.</div>'}
+        <div class="ab-legend">${legend}</div></div>`;
+    }
     // ---- Attendance chart ----
     if(DF.attendanceChart){
       const weeks=[]; for(let m=mondayOf(dashStart()); m<=t; m=addDays(m,7)) weeks.push(m);
@@ -1476,6 +1524,8 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     body.querySelectorAll('[data-dp]').forEach(el=>el.onclick=()=>openProfile(el.dataset.dp));
     body.querySelectorAll('[data-mv]').forEach(el=>el.onclick=()=>{ dashMover=Number(el.dataset.mv); renderDash(); });
     const sel=$('#dashWsel'); if(sel) sel.onchange=()=>{ dashWid=sel.value; renderDash(); };
+    const abs=$('#abSort'); if(abs) abs.onchange=()=>{ dashSort=abs.value; renderDash(); };
+    body.querySelectorAll('[data-abm]').forEach(el=>el.onclick=()=>{ dashMode=el.dataset.abm; renderDash(); });
   }
   function exportDashCSV(){
     if(!dashLoaded) return;
@@ -1551,13 +1601,11 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
       <li>Tap a <b>class number</b> to see who could make that weight, and lock someone there in one tap.</li>
       <li>Use <b>Show: Problems only</b> to see just the classes that need a decision.</li>
       <li><b>Print lineup</b> makes a one-page lineup card. <b>Save lineup</b> keeps a snapshot for a dual or tournament, which you can reopen under <b>Saved lineups</b>.</li></ul>`],
-    ['dashboard','Dashboard', `<ul><li>Pick a <b>Range</b>: this week, the last 30 days, or the season.</li>
-      <li>The top row shows team attendance, this week vs. last week, weigh-ins at the last practice, varsity spots filled, and hydration tests done.</li>
-      <li><b>Needs attention</b> lists wrestlers with low attendance or several recent misses, with their absence reasons.</li>
-      <li><b>Streaks</b> counts practices in a row without a miss (excused days don’t break it).</li>
-      <li>Weight sections show the biggest changes, how far the team is from their classes, and any wrestler’s season chart.</li>
-      <li>Tap any wrestler to open their profile. <b>Export report</b> downloads a spreadsheet with one row per wrestler.</li>
-      <li>Data loads once when you open the tab. Tap <b>Refresh</b> after fixing past attendance or weigh-ins.</li></ul>`],
+    ['dashboard','Dashboard', `<ul><li>Shows every wrestler’s attendance as a bar, using the same counting as profiles and the Weekly tab.</li>
+      <li>Pick a <b>Range</b> (season, last 30 days, or this week) and how to <b>Sort</b> the list.</li>
+      <li><b>Percent</b> shows each wrestler’s rate with a line for the team average. <b>Breakdown</b> splits the bar into present, absent, unmarked, and excused.</li>
+      <li>Tap a wrestler to open their profile. <b>Export report</b> downloads a spreadsheet with one row per wrestler.</li>
+      <li>Tap <b>Refresh</b> after fixing past attendance.</li></ul>`]
     ['profiles','Profiles & hydration tests', `<ul><li>In a profile, tap <b>Edit profile</b> to change name, class, grade, and contact info.</li>
       <li>Record a hydration test (specific gravity, weight, body fat %) to calculate minimum weight and lowest eligible class. If your state gives an official minimum, enter it to override the calculation.</li></ul>`],
     ['schedule','Schedule & attendance rate', `<ul><li><b>Schedule</b> sets practice days and the season start. Cancel or add a single date from the Daily tab.</li>
