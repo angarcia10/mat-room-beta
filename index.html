@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mat Room — Attendance & Weigh-In</title>
+<!-- Home-screen app: needs manifest.webmanifest, icon-192.png, icon-512.png, apple-touch-icon.png next to this file -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#16202b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mat Room Beta">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -254,6 +263,27 @@
     .tab-actions { margin-left:0; width:100%; justify-content:flex-start; }
   }
 
+  /* ---- v1.5: refresh, version, beta tag, help, backup ---- */
+  .icon-btn { width:34px; padding:0; font-size:17px; line-height:34px; font-family:'Inter',sans-serif; text-transform:none; }
+  .beta-pill { display:inline-block; vertical-align:middle; margin-left:8px; background:var(--whistle); color:#3a2a05; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:.6px; padding:2px 7px; border-radius:5px; position:relative; top:-2px; }
+  .foot { flex-wrap:wrap; }
+  .foot-right { margin-left:auto; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  .foot-right .linkbtn { font-size:12px; }
+  .ver { font-family:'Oswald',sans-serif; letter-spacing:.4px; }
+  .updbar { position:sticky; top:0; z-index:850; background:var(--singlet); color:#fff; padding:10px 16px; display:flex; align-items:center; justify-content:center; gap:14px; font-size:13.5px; font-weight:500; flex-wrap:wrap; }
+  .updbar button { background:#fff; color:var(--singlet); border:none; border-radius:7px; padding:6px 13px; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.4px; text-transform:uppercase; cursor:pointer; }
+  .gate-foot { margin-top:20px; font-size:12px; color:var(--ink-soft); }
+  .help-modal { max-width:620px; max-height:88vh; overflow-y:auto; }
+  .help-modal h4 { font-family:'Oswald',sans-serif; font-size:15px; letter-spacing:.4px; text-transform:uppercase; margin:20px 0 6px; color:var(--singlet); }
+  .help-modal h4:first-of-type { margin-top:6px; }
+  .help-modal p, .help-modal li { font-size:13.5px; line-height:1.55; color:var(--ink); }
+  .help-modal p { margin:0 0 8px; }
+  .help-modal ul, .help-modal ol { margin:0 0 8px; padding-left:20px; }
+  .help-modal li { margin-bottom:4px; }
+  .help-toc { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 6px; }
+  .help-toc button { border:1px solid var(--line); background:var(--canvas); color:var(--ink); border-radius:999px; padding:5px 11px; font-size:12px; cursor:pointer; }
+  .changelog li b { font-family:'Oswald',sans-serif; letter-spacing:.3px; }
+
   /* ---- Missing weigh-in reminder ---- */
   .weigh.missing { border-color:var(--flag); box-shadow:0 0 0 2px color-mix(in srgb,var(--flag) 22%,transparent); }
   .delta.missing { color:var(--flag); }
@@ -393,15 +423,17 @@
 </head>
 <body>
 <div class="banner" id="banner"></div>
+<div class="updbar hidden" id="updBar"><span id="updText">A new version of Mat Room is available.</span><button id="updBtn">Refresh now</button></div>
 <header>
   <div class="header-inner">
     <div class="brand">
       <div class="mark logo">
   		 <img src="LOGAN.png" alt="Logan Grizzlies logo">
 	  </div>
-      <div><h1>MAT ROOM</h1><div class="sub">Practice attendance &amp; weigh-in</div></div>
+      <div><h1>MAT ROOM<span class="beta-pill hidden" id="betaPill">BETA</span></h1><div class="sub">Practice attendance &amp; weigh-in</div></div>
     </div>
     <div class="header-right">
+      <button class="auth-btn icon-btn" id="refreshBtn" title="Refresh to get the latest version" aria-label="Refresh">↻</button>
       <div class="auth-box" id="authBox"></div>
       <div class="date-nav hidden" id="dateNav">
         <button id="prevDay" title="Previous day">‹</button>
@@ -487,7 +519,9 @@
     <div class="lu-cap">Roles (V, JV, Extra) stay with the wrestler, so if their weight moves them to a new class, their role goes too. A class lock overrides the automatic placement. Wrestlers with a hydration test are never projected below their lowest eligible class.</div>
   </div>
 
-  <div class="foot"><span class="dot" id="syncDot"></span><span id="syncText">Connecting…</span></div>
+  <div class="foot"><span class="dot" id="syncDot"></span><span id="syncText">Connecting…</span>
+    <span class="foot-right"><button class="linkbtn" id="helpBtn">Coach guide</button><button class="linkbtn" id="backupBtn">Download backup</button><span class="ver" id="verLabel"></span></span>
+  </div>
 </div>
 </div>
 
@@ -521,6 +555,10 @@
 </div>
 
 <datalist id="reasonList"></datalist>
+
+<div class="scrim" id="helpScrim">
+  <div class="modal help-modal" id="helpBody"></div>
+</div>
 
 <div class="scrim" id="luScrim">
   <div class="modal">
@@ -607,6 +645,25 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+/* ============================================================
+   APP VERSION — bump this on every update you upload.
+   Shown in the footer; open copies compare against it to offer
+   "New version available". Add a line to CHANGELOG too.
+   ============================================================ */
+const APP_VERSION = '1.5';
+const IS_BETA = /beta/i.test(firebaseConfig.projectId||'');
+const CHANGELOG = [
+  ['1.5', 'Version number, home-screen app, refresh button, update notice, full backup download, and this coach guide.'],
+  ['1.4', 'Lineup tab: projected lineup by weight, roles (Varsity, JV, Extra 1–8), class locks.'],
+  ['1.3', 'Wrestler Mode check-in, missing weigh-in reminder, full profile editing.'],
+  ['1.2', 'Coaches-only sign-in. Hydration test and minimum weight.'],
+  ['1.1', 'Practice schedule, absence reasons, weight vs. class.'],
+  ['1.0', 'Daily attendance and weigh-ins, weekly summary, wrestler profiles.']
+];
+// After a forced refresh (?r=...), tidy the address bar.
+if(/[?&]r=\d+/.test(location.search)){ try{ history.replaceState(null,'',location.pathname+location.hash); }catch(e){} }
+/* ============================================================ */
 
 /* ============================================================
    COACH EMAILS — must match the list in firestore.rules.
@@ -885,6 +942,100 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   }
   function banner(msg, isErr){ const b=$('#banner'); b.textContent=msg; b.className='banner show'+(isErr?' err':''); clearTimeout(banner._t); banner._t=setTimeout(()=>b.classList.remove('show'),5000); }
 
+  // ---- v1.5: refresh, version check, help, backup ----
+  // Load a fresh copy of the page, skipping any cached version.
+  function hardRefresh(){ location.replace(location.pathname+'?r='+Date.now()+location.hash); }
+  async function checkForUpdate(){
+    try{
+      const r=await fetch(location.pathname+'?v='+Date.now(), {cache:'no-store'});
+      if(!r.ok) return;
+      const m=/APP_VERSION\s*=\s*['"]([^'"]+)['"]/.exec(await r.text());
+      if(m && m[1]!==APP_VERSION){ $('#updText').textContent='Version '+m[1]+' of Mat Room is available (you have '+APP_VERSION+').'; $('#updBar').classList.remove('hidden'); }
+    }catch(e){}
+  }
+  const HELP_SECTIONS=[
+    ['install','Install on your phone', `<p>Mat Room works like an app from your home screen, with no browser bar.</p>
+      <ul><li><b>iPhone / iPad:</b> open the site in <b>Safari</b>, tap <b>Share</b> (square with an arrow), then <b>Add to Home Screen</b>.</li>
+      <li><b>Android:</b> open the site in <b>Chrome</b>, tap the <b>⋮</b> menu, then <b>Add to Home screen</b> or <b>Install app</b>.</li></ul>
+      <p>Use the <b>↻</b> button in the top bar to refresh. If a red bar says a new version is available, tap <b>Refresh now</b>.</p>`],
+    ['daily','Daily attendance & weigh-ins', `<ul><li>Pick the date at the top right, or tap <b>Today</b>.</li>
+      <li>Tap <b>Present</b>, <b>Absent</b>, or <b>Excused</b>. Tap the same button again to clear it.</li>
+      <li>Type the weigh-in in the box. It saves automatically.</li>
+      <li>For Absent or Excused, a <b>Reason</b> box appears. Reasons are only visible to coaches.</li>
+      <li>An amber box and “Needs weigh-in” mean someone is marked Present at practice without a weight.</li>
+      <li>Tap a wrestler’s name to open their profile.</li></ul>`],
+    ['kiosk','Wrestler Mode (self check-in)', `<ol><li>Tap <b>Wrestler Mode</b>. The first time, set a 4-digit coach PIN.</li>
+      <li>Hand the device over. Wrestlers find their name, enter their weight, and tap <b>Check in</b>. That marks them Present.</li>
+      <li>To leave, tap <b>Coach</b> and enter the PIN.</li></ol>
+      <p>Forgot the PIN? Set a new one from your own device under <b>Schedule → Wrestler Mode PIN</b>.</p>
+      <p>Tip: on an iPad, turn on <b>Guided Access</b> (Settings → Accessibility) so kids can’t leave the app. On Android, use <b>Screen pinning</b>.</p>`],
+    ['lineup','Lineup', `<ul><li>Each wrestler is placed in the lightest class their latest weigh-in makes.</li>
+      <li><b>Allowance</b> counts wrestlers within that many pounds of a class (practice weights usually run high).</li>
+      <li>Switch <b>Place wrestlers by</b> to use each wrestler’s assigned class instead.</li>
+      <li>Tap a wrestler to set their role (Varsity, JV, Extra 1–8) or <b>lock</b> them at a class.</li>
+      <li>Wrestlers with a hydration test are never projected below their lowest eligible class.</li>
+      <li>An amber box means two varsity at the same weight. “Open” means no varsity yet.</li></ul>`],
+    ['profiles','Profiles & hydration tests', `<ul><li>In a profile, tap <b>Edit profile</b> to change name, class, grade, and contact info.</li>
+      <li>Record a hydration test (specific gravity, weight, body fat %) to calculate minimum weight and lowest eligible class. If your state gives an official minimum, enter it to override the calculation.</li></ul>`],
+    ['schedule','Schedule & attendance rate', `<ul><li><b>Schedule</b> sets practice days and the season start. Cancel or add a single date from the Daily tab.</li>
+      <li>Attendance rate counts scheduled practices where attendance was taken. Unmarked counts as missed; excused doesn’t count against a wrestler.</li></ul>`],
+    ['backup','Backups', `<p>Tap <b>Download backup</b> at the bottom of the page about once a month. It saves the whole season (roster, attendance, weigh-ins, absence reasons, hydration tests, schedule) as one file. Keep it somewhere safe, like Google Drive.</p>
+      <p>The file holds private information about students, so don’t share it outside the coaching staff.</p>`],
+    ['coaches','Adding a coach', `<p>A new coach’s email has to be added in two places: the <b>COACH_EMAILS</b> list in index.html on GitHub, and the coach list in the <b>Firestore rules</b> in the Firebase console. Then they sign in with that Google account.</p>`],
+    ['changes','What’s new', ''],
+  ];
+  function openHelp(section){
+    const toc=HELP_SECTIONS.map(([id,t])=>`<button data-hs="${id}">${t}</button>`).join('');
+    const body=HELP_SECTIONS.map(([id,t,h])=>{
+      if(id==='changes') h=`<ul class="changelog">${CHANGELOG.map(([v,txt])=>`<li><b>v${v}</b>${v===APP_VERSION?' (this version)':''}: ${escapeHtml(txt)}</li>`).join('')}</ul>`;
+      return `<h4 id="hs-${id}">${t}</h4>${h}`;
+    }).join('');
+    $('#helpBody').innerHTML=`<h3>Coach guide</h3><p class="msub">Mat Room v${APP_VERSION}${IS_BETA?' (beta)':''}</p><div class="help-toc">${toc}</div>${body}<div class="modal-actions"><button class="btn-save" id="helpClose">Close</button></div>`;
+    $('#helpBody').querySelectorAll('[data-hs]').forEach(b=>b.onclick=()=>{ const el=document.getElementById('hs-'+b.dataset.hs); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); });
+    $('#helpClose').onclick=closeHelp;
+    $('#helpScrim').classList.add('open');
+    if(section){ const el=document.getElementById('hs-'+section); if(el) setTimeout(()=>el.scrollIntoView({block:'start'}),30); } else $('#helpBody').scrollTop=0;
+  }
+  function closeHelp(){ $('#helpScrim').classList.remove('open'); }
+  let backingUp=false;
+  async function downloadBackup(){
+    if(!canEdit || backingUp) return;
+    backingUp=true;
+    const btn=$('#backupBtn'), label=btn.textContent;
+    try{
+      const today=todayStr();
+      let from = schedule.seasonStart || addDays(today,-SEASON_SCAN_DAYS);
+      if(from < addDays(today,-400)) from=addDays(today,-400);
+      const dates=[]; for(let d=from; d<=today; d=addDays(d,1)) dates.push(d);
+      const attendanceOut={}; let done=0;
+      for(let i=0;i<dates.length;i+=15){
+        const chunk=dates.slice(i,i+15);
+        await Promise.all(chunk.map(d=>fb.getDocs(attCol(d)).then(snap=>{
+          if(snap.docs.length){ attendanceOut[d]={}; snap.docs.forEach(x=>attendanceOut[d][x.id]=x.data()); }
+        })));
+        done+=chunk.length; btn.textContent='Backing up… '+Math.round(done/dates.length*100)+'%';
+      }
+      const rosterSnap=await fb.getDocs(rosterCol());
+      const notesSnap=await fb.getDocs(fb.collection(fdb,'privateNotes'));
+      const setSnap=await fb.getDocs(fb.collection(fdb,'settings'));
+      const settingsOut={}; setSnap.docs.forEach(x=>{ const v={...x.data()}; delete v.kioskPinHash; settingsOut[x.id]=v; });
+      const out={
+        app:'Mat Room', version:APP_VERSION, database:firebaseConfig.projectId,
+        exportedAt:new Date().toISOString(), exportedBy:user&&user.email, range:{from, to:today},
+        roster:rosterSnap.docs.map(x=>({id:x.id, ...x.data()})),
+        attendance:attendanceOut,
+        privateNotes:Object.fromEntries(notesSnap.docs.map(x=>[x.id, x.data()])),
+        settings:settingsOut
+      };
+      const blob=new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='matroom-'+(IS_BETA?'beta-':'')+'backup-'+today+'.json';
+      document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+      banner('Backup downloaded: '+out.roster.length+' wrestlers, '+Object.keys(attendanceOut).length+' days of attendance.');
+    } catch(e){ banner('Backup failed. Check your connection and try again.', true); }
+    finally{ backingUp=false; btn.textContent=label; }
+  }
+
   // ---- Firestore path helpers ----
   const rosterCol = ()=> fb.collection(fdb,'roster');
   const attCol = (d)=> fb.collection(fdb,'attendance',d,'wrestlers');
@@ -923,8 +1074,9 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
       c.innerHTML=`${LOCK_SVG}<h2>Not authorized</h2><p>You’re signed in as <span class="who">${escapeHtml(user.email)}</span>, which isn’t on the coach list. Ask a coach to add this email, or sign in with a different account.</p><button class="gate-btn alt" id="gateOut">Sign out</button>`;
       $('#gateOut').onclick=()=>fb.signOut(auth);
     } else {
-      c.innerHTML=`${LOCK_SVG}<h2>Coaches only</h2><p>Sign in with your coach Google account to view attendance and weigh-ins.</p><button class="gate-btn" id="gateIn">Coach sign in</button>`;
+      c.innerHTML=`${LOCK_SVG}<h2>Coaches only</h2><p>Sign in with your coach Google account to view attendance and weigh-ins.</p><button class="gate-btn" id="gateIn">Coach sign in</button><div class="gate-foot">Mat Room v${APP_VERSION}${IS_BETA?' beta':''} · <button class="linkbtn" id="gateHelp">How to install &amp; use</button></div>`;
       $('#gateIn').onclick=openLogin;
+      $('#gateHelp').onclick=()=>openHelp('install');
     }
   }
   // Tear down every listener and wipe data from memory and the page.
@@ -1764,6 +1916,19 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   $('#saveAdd').onclick=()=>{ const n=$('#fName').value.trim(); if(!n){$('#fName').focus();return;} addWrestler(n,$('#fClass').value.trim()); scrim.classList.remove('open'); };
   $('#fName').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();}; $('#fClass').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();};
 
+  // v1.5 wiring
+  $('#verLabel').textContent='v'+APP_VERSION+(IS_BETA?' beta':'');
+  $('#betaPill').classList.toggle('hidden', !IS_BETA);
+  if(IS_BETA) document.title='[BETA] '+document.title;
+  $('#refreshBtn').onclick=hardRefresh;
+  $('#updBtn').onclick=hardRefresh;
+  $('#helpBtn').onclick=()=>openHelp();
+  $('#backupBtn').onclick=downloadBackup;
+  $('#helpScrim').onclick=e=>{ if(e.target.id==='helpScrim') closeHelp(); };
+  setTimeout(checkForUpdate, 4000);
+  setInterval(checkForUpdate, 30*60*1000);
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkForUpdate(); });
+
   // Wrestler Mode wiring
   $('#kioskBtn').onclick=()=>enterKiosk();
   $('#kExit').onclick=()=>askPin('verify');
@@ -1792,7 +1957,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   const pscrim=$('#profileScrim');
   $('#profileClose').onclick=closeProfile;
   pscrim.onclick=e=>{ if(e.target===pscrim) closeProfile(); };
-  document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(kioskOn){ if(!$('#pinSheet').classList.contains('hidden')) $('#pinSheet').classList.add('hidden'); else kClose(); return; } if($('#luScrim').classList.contains('open')){ $('#luScrim').classList.remove('open'); luEditId=null; } else if(sscrim.classList.contains('open')) closeSchedule(); else if(profileOpenId) closeProfile(); });
+  document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if($('#helpScrim').classList.contains('open')){ closeHelp(); return; } if(kioskOn){ if(!$('#pinSheet').classList.contains('hidden')) $('#pinSheet').classList.add('hidden'); else kClose(); return; } if($('#luScrim').classList.contains('open')){ $('#luScrim').classList.remove('open'); luEditId=null; } else if(sscrim.classList.contains('open')) closeSchedule(); else if(profileOpenId) closeProfile(); });
 
   syncDateInput();
 }
