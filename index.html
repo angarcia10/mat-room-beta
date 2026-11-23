@@ -205,25 +205,54 @@
   .tab-actions { margin-left:auto; align-self:center; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   .tab-actions .ghost-btn { padding:7px 13px; }
 
-  /* ---- Agenda / events ---- */
-  .agenda { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 6px; align-items:center; font-size:13px; }
-  .ag-chip .dot { box-shadow:0 0 0 1.5px rgba(255,255,255,.5); }
-  .ag-chip { border:1px solid var(--line); background:var(--card); border-radius:999px; padding:7px 13px; font-size:13px; cursor:pointer; color:var(--ink); display:inline-flex; gap:7px; align-items:center; font-family:'Inter',sans-serif; font-weight:600; }
-  .ag-chip .t { font-family:'Oswald',sans-serif; color:var(--ink-soft); font-size:12.5px; font-weight:500; letter-spacing:.3px; }
-  .ag-chip .dot { width:8px; height:8px; border-radius:50%; flex:none; }
-  .ag-chip.on { background:var(--mat); border-color:var(--mat); color:#f5f2ec; } .ag-chip.on .t { color:rgba(245,242,236,.72); }
-  :root[data-theme="dark"] .ag-chip.on { background:var(--singlet); border-color:var(--singlet); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ag-chip.on { background:var(--singlet); border-color:var(--singlet); } }
-  .ag-chip.dim { opacity:.6; } .ag-chip.dim .nm { text-decoration:line-through; }
-  .row.evrow { grid-template-columns:1fr 230px; }
-  .evlist { border:1px solid var(--line); border-radius:8px; max-height:210px; overflow-y:auto; }
-  .ev-days { display:flex; gap:5px; }
-  .ev-days button { flex:1; border:1px solid var(--line); background:transparent; color:var(--ink-soft); padding:7px 0; border-radius:7px; cursor:pointer; font-family:'Oswald',sans-serif; font-size:12px; }
-  .ev-days button[aria-pressed="true"] { background:var(--mat); border-color:var(--mat); color:#f5f2ec; }
-  .ev-modal { max-width:420px; max-height:90vh; overflow-y:auto; }
-  .k-choice { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
-  .k-choice button { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:15px 16px; border-radius:11px; border:1px solid var(--line); background:var(--canvas); color:var(--ink); font-size:16px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; }
-  .k-choice button .t { font-family:'Oswald',sans-serif; color:var(--ink-soft); font-weight:500; }
+  /* ---- Lineup ---- */
+  .lu-controls { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:flex-end; margin-bottom:14px; }
+  .lu-controls .field { margin-bottom:0; }
+  .lu-controls select, .lu-controls input { padding:8px 10px; }
+  .lu-controls input[type=number] { width:80px; }
+  .lu-summary { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:11px 15px; font-size:13.5px; margin-bottom:14px; box-shadow:var(--shadow); }
+  .lu-summary b { font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:.3px; }
+  .lu-summary .warn { color:var(--flag); font-weight:500; }
+  .lu-board { background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); overflow:hidden; }
+  .lu-row { display:grid; grid-template-columns:78px 1fr 1fr 1.5fr; gap:12px; padding:10px 14px; border-bottom:1px solid var(--line); align-items:start; }
+  .lu-row:last-child { border-bottom:none; }
+  .lu-row.head { background:color-mix(in srgb,var(--mat) 5%,var(--card)); font-size:11px; text-transform:uppercase; letter-spacing:.7px; color:var(--ink-soft); font-weight:600; padding-top:9px; padding-bottom:9px; align-items:center; }
+  .lu-cls { font-family:'Oswald',sans-serif; font-size:20px; font-weight:600; letter-spacing:.3px; line-height:1.15; padding-top:4px; }
+  .lu-cls small { display:block; font-family:'Inter',sans-serif; font-size:10.5px; font-weight:500; color:var(--ink-soft); letter-spacing:0; }
+  .lu-cell { display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .lu-cell .lab { display:none; font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); font-weight:600; }
+  .lu-open { font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:7px 0; }
+  .lu-open.vac { color:var(--absent); font-style:normal; font-weight:600; }
+  .lu-chip { display:flex; align-items:center; gap:9px; text-align:left; width:100%; border:1px solid var(--line); background:var(--canvas); color:var(--ink); border-radius:9px; padding:7px 10px; cursor:pointer; font-family:'Inter',sans-serif; min-width:0; }
+  .lu-chip:hover { border-color:var(--ink-soft); }
+  .lu-chip .avatar { width:28px; height:28px; font-size:11.5px; }
+  .lu-chip .lc-main { min-width:0; flex:1; }
+  .lu-chip .lc-name { font-weight:600; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lu-chip .lc-sub { font-size:11.5px; color:var(--ink-soft); line-height:1.35; margin-top:1px; }
+  .lu-chip .lc-sub .ov { color:var(--ink); font-weight:500; } .lu-chip .lc-sub .ok { color:var(--present); font-weight:500; }
+  .lu-chip .lc-sub .bad { color:var(--absent); font-weight:600; }
+  .lu-role { flex:none; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:.4px; padding:2px 7px; border-radius:5px; background:var(--line); color:var(--ink); }
+  .lu-role.V { background:var(--singlet); color:#fff; } .lu-role.JV { background:var(--mat); color:#f5f2ec; }
+  :root[data-theme="dark"] .lu-role.JV { background:#3a4a5a; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lu-role.JV { background:#3a4a5a; } }
+  .lu-role.none { background:transparent; border:1px dashed var(--line); color:var(--ink-soft); }
+  .lu-cell.conflict { background:var(--flag-bg); border-radius:9px; padding:6px; margin:-6px; }
+  .lu-cell .cnote { font-size:11.5px; color:var(--flag); font-weight:600; }
+  .lu-side { margin-top:18px; }
+  .lu-side h3 { font-family:'Oswald',sans-serif; font-size:15px; letter-spacing:.4px; text-transform:uppercase; margin:0 0 8px; }
+  .lu-side .lu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px; }
+  .lu-cap { font-size:11.5px; color:var(--ink-soft); margin-top:10px; }
+  .lu-loading { padding:30px; text-align:center; color:var(--ink-soft); }
+  @media (max-width:720px){
+    .lu-row { grid-template-columns:1fr; gap:8px; }
+    .lu-row.head { display:none; }
+    .lu-cell .lab { display:block; }
+    .lu-cls { display:flex; align-items:baseline; gap:8px; } .lu-cls small { display:inline; }
+    .lu-cell.empty { display:none; }
+    .tabs { flex-wrap:wrap; }
+    .tab { padding:8px 12px; }
+    .tab-actions { margin-left:0; width:100%; justify-content:flex-start; }
+  }
 
   /* ---- Missing weigh-in reminder ---- */
   .weigh.missing { border-color:var(--flag); box-shadow:0 0 0 2px color-mix(in srgb,var(--flag) 22%,transparent); }
@@ -347,7 +376,7 @@
 
   @media (max-width:720px) {
     .scoreboard { grid-template-columns:repeat(2,1fr); }
-    .row, .row.evrow { grid-template-columns:1fr; gap:10px; padding:14px 14px; }
+    .row { grid-template-columns:1fr; gap:10px; padding:14px 14px; }
     .row.head { display:none; }
     .status-group button { padding:8px 0; }
     .weigh-cell { flex-direction:row; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -393,6 +422,7 @@
   <div class="tabs">
     <button class="tab active" id="tabDay">Daily</button>
     <button class="tab" id="tabWeek">Weekly Summary</button>
+    <button class="tab" id="tabLineup">Lineup</button>
     <div class="viewbadge hidden" id="viewBadge">
       <svg class="lockico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
       View only — sign in to edit
@@ -408,15 +438,13 @@
       <div class="score present"><div class="n" id="cPresent">0</div><div class="l">Present</div></div>
       <div class="score absent"><div class="n" id="cAbsent">0</div><div class="l">Absent</div></div>
       <div class="score excused"><div class="n" id="cExcused">0</div><div class="l">Excused</div></div>
-      <div class="score"><div class="n" id="cWeigh">0</div><div class="l" id="lWeigh">Weighed In</div></div>
+      <div class="score"><div class="n" id="cWeigh">0</div><div class="l">Weighed In</div></div>
     </div>
     <div class="toolbar">
       <div>
         <h2 id="dayTitle">Practice Roster</h2>
-        <div class="agenda" id="agenda"></div>
         <div class="daytag" id="dayTag"></div>
-        <div class="daytag hidden" id="evTag"></div>
-        <div class="hint" id="dayHint">Tap a status, then enter weigh-in. Tap a name to open their profile.</div>
+        <div class="hint">Tap a status, then enter weigh-in. Tap a name to open their profile.</div>
       </div>
       <div class="btn-row">
         <button class="ghost-btn" id="exportDay">Export CSV</button>
@@ -439,6 +467,24 @@
     </div>
     <div class="week-scroll"><table class="week-table" id="weekTable"></table></div>
     <div class="rate-cap">Att. Rate counts scheduled practices where attendance was taken. Unmarked counts as missed; excused doesn’t count against a wrestler.</div>
+  </div>
+
+  <div id="lineupView" class="hidden">
+    <div class="toolbar">
+      <div>
+        <h2>Projected lineup</h2>
+        <div class="hint">Built from each wrestler’s latest weigh-in and role. Tap a wrestler to change their role or lock their class.</div>
+      </div>
+      <div class="btn-row"><button class="ghost-btn" id="luRefresh">Refresh weights</button><button class="ghost-btn" id="luExport">Export CSV</button></div>
+    </div>
+    <div class="lu-controls">
+      <div class="field"><label for="luMode">Place wrestlers by</label><select id="luMode"><option value="weight">Latest weigh-in</option><option value="class">Assigned weight class</option></select></div>
+      <div class="field" id="luAllowWrap"><label for="luAllow">Allowance over class (lb)</label><input id="luAllow" type="number" min="0" max="15" step="0.5" inputmode="decimal"></div>
+    </div>
+    <div class="lu-summary" id="luSummary"></div>
+    <div class="lu-board" id="luBoard"><div class="lu-loading">Loading weigh-ins…</div></div>
+    <div class="lu-side hidden" id="luSide"></div>
+    <div class="lu-cap">Roles (V, JV, Extra) stay with the wrestler, so if their weight moves them to a new class, their role goes too. A class lock overrides the automatic placement. Wrestlers with a hydration test are never projected below their lowest eligible class.</div>
   </div>
 
   <div class="foot"><span class="dot" id="syncDot"></span><span id="syncText">Connecting…</span></div>
@@ -468,8 +514,6 @@
     <p class="msub">Attendance rates count only these days. To cancel or add a single date, use the link under the date on the Daily tab.</p>
     <div class="field"><label>Regular practice days</label><div class="dow-group" id="dowGroup"></div></div>
     <div class="field"><label for="seasonStart">Season start</label><input type="date" id="seasonStart"></div>
-    <div class="field"><label for="practiceTime">Practice time</label><input type="time" id="practiceTime"></div>
-    <div class="field"><label>Other events</label><div class="evlist" id="evList"></div><button class="linkbtn" id="schedAddEv" style="margin-top:8px">+ Add an event</button></div>
     <div class="field"><label>One-off changes</label><div class="ovlist" id="ovList"></div></div>
     <div class="field"><label>Wrestler Mode PIN</label><div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--ink-soft)"><span id="pinState">Not set</span><button class="linkbtn" id="pinChange">Set PIN</button></div></div>
     <div class="modal-actions"><button class="btn-cancel" id="schedCancel">Close</button><button class="btn-save" id="schedSave">Save schedule</button></div>
@@ -478,24 +522,21 @@
 
 <datalist id="reasonList"></datalist>
 
-<div class="scrim" id="evScrim">
-  <div class="modal ev-modal">
-    <h3>Add an event</h3>
-    <p class="msub">Attendance only, no weigh-in. Practice is set by the regular schedule.</p>
-    <div class="field"><label for="evType">Type</label><select id="evType"><option value="lift">Morning lift</option><option value="dual">Dual</option><option value="tournament">Tournament</option><option value="other">Other</option></select></div>
-    <div class="field"><label for="evTitle">Name</label><input id="evTitle" type="text" maxlength="60" placeholder="e.g. Dual vs. Sky View"></div>
-    <div class="field"><label for="evTime">Time</label><input id="evTime" type="time"></div>
-    <div class="field"><label for="evRepeat">Repeats</label><select id="evRepeat"><option value="once">Just one date</option><option value="weekly">Every week</option></select></div>
-    <div class="field" id="evDateWrap"><label for="evDate">Date</label><input id="evDate" type="date"></div>
-    <div class="field hidden" id="evDaysWrap"><label>On these days</label><div class="ev-days" id="evDays"></div></div>
-    <div class="modal-actions"><button class="btn-cancel" id="evCancel">Cancel</button><button class="btn-save" id="evSave">Add event</button></div>
+<div class="scrim" id="luScrim">
+  <div class="modal">
+    <h3 id="luName">Wrestler</h3>
+    <p class="msub" id="luInfo"></p>
+    <div class="field"><label for="luRole">Role</label><select id="luRole"></select></div>
+    <div class="field"><label for="luLock">Lineup class</label><select id="luLock"></select></div>
+    <p class="msub" id="luWarn" style="color:var(--absent);margin-top:-4px"></p>
+    <div class="modal-actions"><button class="btn-cancel" id="luProfile" style="margin-right:auto">Open profile</button><button class="btn-cancel" id="luCancel">Cancel</button><button class="btn-save" id="luSave">Save</button></div>
   </div>
 </div>
 
 <!-- Wrestler Mode (kiosk) -->
 <div class="kiosk hidden" id="kiosk">
   <div class="k-top">
-    <div class="k-brand"><img src="LOGAN.png" alt=""><div><div class="k-title" id="kTitle">Practice check-in</div><div class="k-date" id="kDate"></div></div></div>
+    <div class="k-brand"><img src="LOGAN.png" alt=""><div><div class="k-title">Practice check-in</div><div class="k-date" id="kDate"></div></div></div>
     <button class="k-exit" id="kExit">Coach</button>
   </div>
   <div class="k-body">
@@ -509,21 +550,13 @@
   <div class="k-card">
     <div class="kc-name" id="kName"></div>
     <div class="kc-sub" id="kSub">Step on the scale and enter your weight.</div>
-    <div class="k-wt" id="kWtBox"><input id="kWeight" type="number" inputmode="decimal" step="0.1" placeholder="000.0" aria-label="Your weight"><span>lb</span></div>
+    <div class="k-wt"><input id="kWeight" type="number" inputmode="decimal" step="0.1" placeholder="000.0" aria-label="Your weight"><span>lb</span></div>
     <div class="k-err" id="kErr"></div>
     <div class="k-actions"><button class="k-back" id="kCancel">Back</button><button class="k-go" id="kSubmit">Check in</button></div>
   </div>
 </div>
 <div class="k-sheet hidden" id="kDone">
   <div class="k-card k-done"><div class="kd-check">✓</div><div class="kc-name" id="kDoneName"></div><div class="kc-sub" id="kDoneSub" style="margin-bottom:0"></div></div>
-</div>
-<div class="k-sheet hidden" id="kChoose">
-  <div class="k-card">
-    <div class="kc-name">Which check-in?</div>
-    <div class="kc-sub">There’s more than one event today. Pick the one wrestlers are checking in for.</div>
-    <div class="k-choice" id="kChoiceList"></div>
-    <button class="k-plain" id="kChooseCancel" style="width:100%;margin-top:12px">Cancel</button>
-  </div>
 </div>
 <div class="k-sheet top hidden" id="pinSheet">
   <div class="k-card">
@@ -553,7 +586,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField, query, where }
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ============================================================
@@ -562,6 +595,7 @@ import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, o
    "Your apps" → Web app → "Config". Copy the object and replace
    the placeholder values below.
    ============================================================ */
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBas00F70VFmez6mihDbtqyU1XHL43TwT4",
   authDomain: "mat-room-beta.firebaseapp.com",
@@ -570,6 +604,9 @@ const firebaseConfig = {
   messagingSenderId: "975845942606",
   appId: "1:975845942606:web:7a306a40e78f37f9ecea1f"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
 /* ============================================================
    COACH EMAILS — must match the list in firestore.rules.
@@ -616,7 +653,7 @@ if (NOT_CONFIGURED) {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const fdb = getFirestore(app);
-  startApp(auth, fdb, { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField, query, where, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }, COACH_EMAILS, WEIGHT_CLASSES);
+  startApp(auth, fdb, { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, deleteField, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut }, COACH_EMAILS, WEIGHT_CLASSES);
 }
 
 function startApp(auth, fdb, fb, coachEmails, weightClasses){
@@ -634,17 +671,16 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   let profileOpenId=null, profileToken=0;
   // Practice schedule (settings/team). Defaults apply until the doc exists.
   // practiceDays uses JS getDay() numbers: 0=Sun ... 6=Sat.
-  let schedule={practiceDays:[1,2,3,4,5], seasonStart:'', overrides:{}, practiceTime:'15:00', eventTemplates:[], oneOffEvents:[], eventSkips:{}};
+  let schedule={practiceDays:[1,2,3,4,5], seasonStart:'', overrides:{}};
   let schedDraft=null;
   // Coach-only absence reasons: privateNotes/{wrestlerId} = { notes: { 'YYYY-MM-DD': 'Sick' } }
   let notes={}, unsubNotes=null, noteTimers={};
   let prevToken=0;
   let kioskPinHash='', kioskOn=false, kSelId=null, kIdle=null, kDoneTimer=null, kDayTimer=null;
-  const KIOSK_KEY='matroom-kiosk', KIOSK_EV_KEY='matroom-kiosk-event';
-  // Events (Phase 2). Practice stays in attendance/{date}; other events are attendance-only
-  // and stored in eventCheckins/{date}__{eventKey}__{wrestlerId} = {date, event, wid, status}.
-  let selEvent='practice', evAtt={}, unsubEvAtt=null, kEvent='practice', evDraftDays=[];
-  const EV_TYPES={ practice:{label:'Practice',color:'#b3122b'}, lift:{label:'Morning lift',color:'#2d6cb3'}, dual:{label:'Dual',color:'#8a3fb0'}, tournament:{label:'Tournament',color:'#c77d18'}, other:{label:'Other',color:'#127d7a'} };
+  const KIOSK_KEY='matroom-kiosk';
+  // Lineup: latest weigh-in per wrestler from the last LINEUP_SCAN_DAYS days.
+  const LINEUP_SCAN_DAYS=30, LINEUP_STALE_DAYS=14, MAX_EXTRAS=8;
+  let luWeights={}, luLoaded=false, luLoading=false, luToken=0, luEditId=null;
   let hydro={}; // coach-only hydration test per wrestler (privateNotes/{id}.hydration)
 
   function todayStr(){ const d=new Date(); const off=d.getTimezoneOffset(); return new Date(d-off*60000).toISOString().slice(0,10); }
@@ -689,27 +725,142 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     const d=r1(cur-hs.min);
     return d>=0 ? {cls:'above', txt:d+' above min'} : {cls:'below', txt:Math.abs(d)+' below min'};
   }
-  // ---- Events ----
-  function fmtTime(t){ if(!t) return ''; const [h,m]=t.split(':').map(Number); const ap=h>=12?'PM':'AM'; return ((h%12)||12)+':'+String(m).padStart(2,'0')+' '+ap; }
-  function newId(p){ return p+Math.random().toString(36).slice(2,9); }
-  // Everything on a date, in time order. cancelled=true for a skipped recurring occurrence.
-  function agendaFor(d){
-    const dow=parseLocal(d).getDay(), list=[];
-    const prac=isPractice(d);
-    list.push({key:'practice', type:'practice', title:'Practice', time:schedule.practiceTime, kind:'practice', off:!prac});
-    (schedule.eventTemplates||[]).forEach(t=>{
-      if(!(t.days||[]).includes(dow) || (t.from && d<t.from)) return;
-      list.push({key:t.id, type:t.type, title:t.title, time:t.time, kind:'recurring', tpl:t, cancelled:!!schedule.eventSkips[d+'__'+t.id]});
-    });
-    (schedule.oneOffEvents||[]).forEach(o=>{ if(o.date===d) list.push({key:o.id, type:o.type, title:o.title, time:o.time, kind:'oneoff', ev:o}); });
-    list.sort((a,b)=>(a.off?1:0)-(b.off?1:0) || (a.time||'99').localeCompare(b.time||'99'));
-    return list;
+  // ---- Lineup ----
+  function saveSettings(obj){ return fb.setDoc(settingsDoc(), obj, {merge:true}).catch(()=>banner('Could not save the lineup settings.',true)); }
+  const STD_CLASSES=()=>WCLASSES.map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+  function roleRank(r){ if(r==='V') return 0; if(r==='JV') return 1; const m=/^X(\d+)$/.exec(r||''); return m?1+Number(m[1]):99; }
+  function roleShort(r){ if(r==='V') return 'V'; if(r==='JV') return 'JV'; const m=/^X(\d+)$/.exec(r||''); return m?'X'+m[1]:'—'; }
+  function roleLong(r){ if(r==='V') return 'Varsity'; if(r==='JV') return 'JV'; const m=/^X(\d+)$/.exec(r||''); return m?'Extra '+m[1]:'Unranked'; }
+  function latestWeight(id){
+    let best=luWeights[id]||null;
+    const t=todayStr(), rec=selDate===t?attendance[id]:null;
+    if(rec && validW(rec.weight) && (!best || t>=best.date)) best={date:t, weight:rec.weight};
+    return best;
   }
-  function eventsOn(d){ return agendaFor(d).filter(e=>!e.off && !e.cancelled); }
-  function defaultEvent(d){ if(isPractice(d)) return 'practice'; const e=eventsOn(d); return e.length?e[0].key:'practice'; }
-  function curEvent(){ return agendaFor(selDate).find(e=>e.key===selEvent) || agendaFor(selDate)[0]; }
-  function evLabel(e){ return e.title || (EV_TYPES[e.type]||EV_TYPES.other).label; }
-  function evStatus(key,wid){ return ((evAtt[key]||{})[wid]||{}).status||null; }
+  // Where a wrestler lands in the projected lineup, and why.
+  function placeFor(w){
+    const nums=STD_CLASSES(), hs=hydroSummary(hydro[w.id]), lowest=hs&&hs.lowest!=null?hs.lowest:null;
+    const lw=latestWeight(w.id), allow=schedule.lineupAllowance||0, t=targetOf(w);
+    const fromWeight=x=>nums.find(n=>x<=n+allow);
+    const fromClass=x=>nums.find(n=>n>=x);
+    let cls=null, how='', over=false;
+    if(w.lineupClass && !isNaN(Number(w.lineupClass))){ cls=Number(w.lineupClass); how='locked'; }
+    else if(schedule.lineupMode==='class' && t!=null){ cls=fromClass(t); how='class'; }
+    else if(lw){ cls=fromWeight(lw.weight); how='weight'; if(cls==null) over=true; }
+    else if(t!=null){ cls=fromClass(t); how='class-fallback'; }
+    let held=false;
+    if(how!=='locked' && cls!=null && lowest!=null && cls<lowest){ cls=lowest; held=true; }
+    const belowMin = how==='locked' && lowest!=null && cls<lowest;
+    const stale = lw ? daysBetween(lw.date, todayStr())>LINEUP_STALE_DAYS : false;
+    return {cls, how, over, held, belowMin, lw, stale, lowest};
+  }
+  async function loadLineupWeights(){
+    const myTok=++luToken; luLoading=true;
+    if(view==='lineup') renderLineup();
+    const found={}, dates=[]; for(let i=0;i<LINEUP_SCAN_DAYS;i++) dates.push(addDays(todayStr(),-i));
+    await Promise.all(dates.map(d=>fb.getDocs(attCol(d)).then(snap=>{
+      snap.docs.forEach(x=>{ const v=x.data().weight; if(validW(v) && (!found[x.id] || d>found[x.id].date)) found[x.id]={date:d, weight:v}; });
+    }).catch(()=>{})));
+    if(myTok!==luToken) return;
+    luWeights=found; luLoaded=true; luLoading=false;
+    if(view==='lineup') renderLineup();
+  }
+  function luChip(w, pl, showCls){
+    const r=w.lineupRole||'';
+    let sub='';
+    if(pl.lw){
+      const v=pl.cls!=null?r1(pl.lw.weight-pl.cls):null;
+      sub=`${pl.lw.weight} lb, ${medDate(pl.lw.date)}`;
+      if(v!=null) sub+= v>0 ? `, <span class="ov">${v} over</span>` : `, <span class="ok">${v===0?'on weight':Math.abs(v)+' under'}</span>`;
+    } else sub='No recent weigh-in';
+    const tags=[];
+    if(pl.how==='locked') tags.push('🔒 locked');
+    if(pl.held) tags.push('held at min');
+    if(pl.stale) tags.push('old weigh-in');
+    if(pl.how==='class-fallback') tags.push('by assigned class');
+    if(pl.belowMin) sub+=`, <span class="bad">below min (${pl.lowest})</span>`;
+    if(tags.length) sub+=', '+tags.join(', ');
+    if(showCls && pl.cls!=null) sub=pl.cls+' class, '+sub;
+    return `<button class="lu-chip" data-lu="${w.id}"><div class="avatar" style="background:${colorFor(w.id)}">${initials(w.name)}</div><div class="lc-main"><div class="lc-name">${escapeHtml(w.name)}</div><div class="lc-sub">${sub}</div></div><span class="lu-role ${r==='V'?'V':r==='JV'?'JV':r?'':'none'}">${roleShort(r)}</span></button>`;
+  }
+  function lineupData(){
+    const nums=STD_CLASSES(), byCls={}, over=[], unplaced=[];
+    nums.forEach(n=>byCls[n]=[]);
+    roster.forEach(w=>{
+      const pl=placeFor(w);
+      if(pl.over) over.push({w,pl});
+      else if(pl.cls==null) unplaced.push({w,pl});
+      else (byCls[pl.cls]=byCls[pl.cls]||[]).push({w,pl});
+    });
+    Object.values(byCls).forEach(list=>list.sort((a,b)=>roleRank(a.w.lineupRole)-roleRank(b.w.lineupRole) || (a.w.name||'').localeCompare(b.w.name||'')));
+    return {nums, byCls, over, unplaced};
+  }
+  function renderLineup(){
+    $('#luMode').value=schedule.lineupMode||'weight';
+    if(document.activeElement!==$('#luAllow')) $('#luAllow').value=schedule.lineupAllowance||0;
+    $('#luAllowWrap').classList.toggle('hidden', schedule.lineupMode==='class');
+    const board=$('#luBoard');
+    if(!luLoaded){ board.innerHTML='<div class="lu-loading">Loading weigh-ins…</div>'; $('#luSummary').textContent=''; return; }
+    const {nums, byCls, over, unplaced}=lineupData();
+    let html=`<div class="lu-row head"><div>Class</div><div>Varsity</div><div>JV</div><div>Extras &amp; unranked</div></div>`;
+    let filled=0; const open=[], dup=[];
+    nums.forEach(n=>{
+      const list=byCls[n]||[], v=list.filter(x=>x.w.lineupRole==='V'), jv=list.filter(x=>x.w.lineupRole==='JV'), rest=list.filter(x=>x.w.lineupRole!=='V' && x.w.lineupRole!=='JV');
+      if(v.length) filled++; else open.push(n);
+      if(v.length>1) dup.push(n);
+      const cell=(items,lab,emptyTxt,vac,conf)=>`<div class="lu-cell ${conf?'conflict':''} ${(!items.length&&!vac)?'empty':''}"><span class="lab">${lab}</span>${conf?`<span class="cnote">⚠ ${items.length} ${lab==='Varsity'?'varsity':'JV'} at ${n}</span>`:''}${items.length?items.map(x=>luChip(x.w,x.pl)).join(''):`<div class="lu-open ${vac?'vac':''}">${emptyTxt}</div>`}</div>`;
+      html+=`<div class="lu-row"><div class="lu-cls">${n}<small>${list.length} wrestler${list.length===1?'':'s'}</small></div>${cell(v,'Varsity', list.length?'No varsity set':'Open', true, v.length>1)}${cell(jv,'JV','—',false,jv.length>1)}${cell(rest,'Extras','—',false,false)}</div>`;
+    });
+    board.innerHTML=html;
+    let sum=`<b>${filled} of ${nums.length}</b> varsity spots filled.`;
+    if(open.length) sum+=` Open: ${open.join(', ')}.`;
+    if(dup.length) sum+=` <span class="warn">Two or more varsity at ${dup.join(', ')}.</span>`;
+    if(schedule.lineupMode!=='class') sum+=` Placement uses each wrestler’s latest weigh-in${schedule.lineupAllowance?` with a ${schedule.lineupAllowance} lb allowance`:''}.`;
+    else sum+=` Placement uses each wrestler’s assigned weight class.`;
+    if(luLoading) sum+=' Refreshing…';
+    $('#luSummary').innerHTML=sum;
+    const side=$('#luSide'); let sh='';
+    if(over.length) sh+=`<h3>Over ${nums[nums.length-1]}</h3><div class="lu-grid">${over.map(x=>luChip(x.w,x.pl)).join('')}</div>`;
+    if(unplaced.length) sh+=`<h3 style="margin-top:${over.length?'16px':'0'}">Not placed</h3><div class="pchart-cap" style="text-align:left;margin:-4px 0 8px">No weigh-in in the last ${LINEUP_SCAN_DAYS} days and no weight class set.</div><div class="lu-grid">${unplaced.map(x=>luChip(x.w,x.pl)).join('')}</div>`;
+    side.innerHTML=sh; side.classList.toggle('hidden', !sh);
+    document.querySelectorAll('#lineupView [data-lu]').forEach(b=>b.onclick=()=>openLineupEdit(b.dataset.lu));
+  }
+  function openLineupEdit(id){
+    const w=roster.find(r=>r.id===id); if(!w||!canEdit) return;
+    luEditId=id;
+    const pl=placeFor({...w, lineupClass:''});
+    $('#luName').textContent=w.name;
+    const lw=pl.lw;
+    $('#luInfo').textContent = (lw?`Latest weigh-in ${lw.weight} lb on ${medDate(lw.date)}.`:'No weigh-in in the last '+LINEUP_SCAN_DAYS+' days.') + (w.wclass?` Assigned class ${w.wclass}.`:'') + (pl.lowest!=null?` Lowest eligible class ${pl.lowest}.`:'');
+    const roles=[['','Unranked'],['V','Varsity'],['JV','JV']]; for(let i=1;i<=MAX_EXTRAS;i++) roles.push(['X'+i,'Extra '+i]);
+    $('#luRole').innerHTML=roles.map(([v,l])=>`<option value="${v}" ${String(w.lineupRole||'')===v?'selected':''}>${l}</option>`).join('');
+    const autoTxt = pl.over ? 'Auto (over '+STD_CLASSES().slice(-1)[0]+')' : pl.cls!=null ? 'Auto (projected '+pl.cls+')' : 'Auto (not placed)';
+    $('#luLock').innerHTML=`<option value="">${autoTxt}</option>`+STD_CLASSES().map(n=>`<option value="${n}" ${String(w.lineupClass||'')===String(n)?'selected':''}>Lock at ${n}</option>`).join('');
+    const warn=()=>{ const v=$('#luLock').value; $('#luWarn').textContent = (v && pl.lowest!=null && Number(v)<pl.lowest) ? `${v} is below this wrestler’s lowest eligible class (${pl.lowest}).` : ''; };
+    $('#luLock').onchange=warn; warn();
+    $('#luScrim').classList.add('open');
+  }
+  async function saveLineupEdit(){
+    const id=luEditId; if(!id) return;
+    const fields={lineupRole:$('#luRole').value, lineupClass:$('#luLock').value};
+    $('#luSave').disabled=true;
+    try{
+      await updateProfile(id, fields);
+      const w=roster.find(r=>r.id===id); if(w) Object.assign(w, fields);
+      $('#luScrim').classList.remove('open'); luEditId=null; renderLineup();
+    } catch(e){ banner('Could not save the lineup change.', true); }
+    finally{ $('#luSave').disabled=false; }
+  }
+  function exportLineupCSV(){
+    const {nums, byCls, over, unplaced}=lineupData();
+    const rows=[['Class','Role','Wrestler','Latest Weight (lb)','Weigh-in Date','Vs Class','Placement']];
+    const how=pl=>pl.how==='locked'?'Locked by coach':pl.held?'Held at min weight':pl.how==='class'?'Assigned class':pl.how==='class-fallback'?'Assigned class (no recent weigh-in)':'Latest weigh-in';
+    const line=(c,x)=>{ const lw=x.pl.lw, v=(lw&&c!=='')?r1(lw.weight-Number(c)):''; rows.push([c, roleLong(x.w.lineupRole||''), x.w.name, lw?lw.weight:'', lw?lw.date:'', v===''?'':(v>0?'+'+v:v), how(x.pl)]); };
+    nums.forEach(n=>{ const list=byCls[n]||[]; if(!list.some(x=>x.w.lineupRole==='V')) rows.push([n,'Varsity','(open)','','','','']); list.forEach(x=>line(n,x)); });
+    over.forEach(x=>line('Over '+nums[nums.length-1],x));
+    unplaced.forEach(x=>line('Not placed',x));
+    downloadCSV(rows, 'lineup_'+todayStr()+'.csv');
+  }
 
   // ---- Practice schedule ----
   function isPractice(d){
@@ -780,10 +931,10 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   function stop(){
     if(!started) return;
     started=false;
-    [unsubRoster, unsubAtt, unsubSettings, unsubNotes, unsubEvAtt].forEach(u=>{ if(u) u(); });
-    unsubRoster=unsubAtt=unsubSettings=unsubNotes=unsubEvAtt=null; evAtt={};
+    [unsubRoster, unsubAtt, unsubSettings, unsubNotes].forEach(u=>{ if(u) u(); });
+    unsubRoster=unsubAtt=unsubSettings=unsubNotes=null;
     if(unsubWeek){ unsubWeek.forEach(u=>u()); unsubWeek=null; }
-    roster=[]; attendance={}; weekData={}; prevWeights={}; notes={}; hydro={};
+    roster=[]; attendance={}; weekData={}; prevWeights={}; notes={}; hydro={}; luWeights={}; luLoaded=false; luLoading=false; luToken++;
     if(profileOpenId) closeProfile();
     hideKioskUI();
     $('#schedScrim').classList.remove('open'); $('#scrim').classList.remove('open');
@@ -814,24 +965,19 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   // ---- Data subscriptions ----
   function start(){
     $('#syncText').textContent='Connected';
-    selEvent=defaultEvent(selDate);
     unsubRoster = fb.onSnapshot(rosterCol(), snap=>{
       roster = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-      if(view==='day') renderDaily(); else renderWeek();
+      if(view==='day') renderDaily(); else if(view==='week') renderWeek(); else renderLineup();
       if(kioskOn) renderKiosk();
       if(profileOpenId){ const w=roster.find(r=>r.id===profileOpenId); if(w) updateProfileHeader(w); }
     }, err=>{ $('#syncDot').className='dot off'; $('#syncText').textContent='Sync error: '+err.code; });
     unsubSettings = fb.onSnapshot(settingsDoc(), snap=>{
       const d=snap.exists()?snap.data():{};
       schedule={ practiceDays:Array.isArray(d.practiceDays)?d.practiceDays:[1,2,3,4,5], seasonStart:d.seasonStart||'', overrides:d.overrides||{} };
-      schedule.practiceTime=d.practiceTime||'15:00';
-      schedule.eventTemplates=Array.isArray(d.eventTemplates)?d.eventTemplates:[];
-      schedule.oneOffEvents=Array.isArray(d.oneOffEvents)?d.oneOffEvents:[];
-      schedule.eventSkips=d.eventSkips||{};
       kioskPinHash=d.kioskPinHash||''; renderPinState();
-      if(!agendaFor(selDate).some(e=>e.key===selEvent)) selEvent=defaultEvent(selDate);
-      if(view==='day') renderDaily();
-      if($('#schedScrim').classList.contains('open')) renderEvList();
+      schedule.lineupMode = d.lineupMode==='class' ? 'class' : 'weight';
+      schedule.lineupAllowance = validW(d.lineupAllowance) ? d.lineupAllowance : 0;
+      if(view==='lineup') renderLineup();
       if(kioskOn) renderKiosk();
       renderDayTag(); if(view==='week') renderWeek();
       if($('#schedScrim').classList.contains('open')) renderOverrides();
@@ -845,7 +991,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     unsubNotes = fb.onSnapshot(fb.collection(fdb,'privateNotes'), snap=>{
       notes={}; hydro={};
       snap.docs.forEach(d=>{ const x=d.data(); notes[d.id]=x.notes||{}; if(x.hydration) hydro[d.id]=x.hydration; });
-      patchNotes(); updateDeltas(); if(view==='week') renderWeek();
+      patchNotes(); updateDeltas(); if(view==='week') renderWeek(); if(view==='lineup') renderLineup();
     }, err=>{ banner('Absence reasons can\u2019t load yet. Publish the updated Firestore rules (privateNotes) in the Firebase console.', true); });
   }
   function watchDate(){
@@ -853,30 +999,9 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     unsubAtt=null; if(!started) return;
     attendance={};
     unsubAtt = fb.onSnapshot(attCol(selDate), snap=>{
-      attendance={}; snap.docs.forEach(d=>attendance[d.id]=d.data()); if(selEvent==='practice') patchDaily(); if(kioskOn) renderKiosk();
+      attendance={}; snap.docs.forEach(d=>attendance[d.id]=d.data()); patchDaily(); if(kioskOn) renderKiosk(); if(view==='lineup') renderLineup();
     }, ()=>{});
-    if(unsubEvAtt) unsubEvAtt();
-    evAtt={};
-    unsubEvAtt = fb.onSnapshot(fb.query(fb.collection(fdb,'eventCheckins'), fb.where('date','==',selDate)), snap=>{
-      evAtt={};
-      snap.docs.forEach(x=>{ const v=x.data(); if(v.event&&v.wid&&v.status) (evAtt[v.event]=evAtt[v.event]||{})[v.wid]={status:v.status}; });
-      if(view==='day' && selEvent!=='practice') patchEvent();
-      if(kioskOn) renderKiosk();
-    }, err=>{ if(err&&err.code==='permission-denied') banner('Event attendance needs the updated Firestore rules (eventCheckins). See the README.', true); });
     loadPrevWeights();
-  }
-  const evDocRef=(d,key,wid)=>fb.doc(fdb,'eventCheckins',d+'__'+key+'__'+wid);
-  function writeEvStatus(d,key,wid,status){
-    if(!canEdit) return Promise.reject();
-    (evAtt[key]=evAtt[key]||{});
-    if(status) evAtt[key][wid]={status}; else delete evAtt[key][wid];
-    const ref=evDocRef(d,key,wid);
-    return status ? fb.setDoc(ref,{date:d, event:key, wid, status, updated:Date.now()}) : fb.deleteDoc(ref);
-  }
-  function setEvStatus(wid,status){
-    const key=selEvent, cur=evStatus(key,wid), next=cur===status?null:status;
-    writeEvStatus(selDate,key,wid,next).catch(()=>banner('Could not save event attendance. Check that the updated Firestore rules are published.',true));
-    patchEvent();
   }
   function loadPrevWeights(){
     prevWeights={};
@@ -994,7 +1119,6 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   }
   // Surgical update after an attendance snapshot: never rebuild rows, never touch a focused input.
   function patchDaily(){
-    if(selEvent!=='practice') return;
     if(roster.length===0) return renderDaily();
     for(const r of roster){ if(!document.querySelector('.row[data-id="'+r.id+'"]')) return renderDaily(); }
     roster.forEach(r=>{
@@ -1017,89 +1141,13 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
       else if(p) html+=`<button class="linkbtn" data-ov="cancel">Cancel this practice</button>`;
       else html+=`<button class="linkbtn" data-ov="add">Make this a practice day</button>`;
     }
-    el.className='daytag'+(p?'':' off')+(selEvent!=='practice'?' hidden':''); el.innerHTML=html;
+    el.className='daytag'+(p?'':' off'); el.innerHTML=html;
     const b=el.querySelector('[data-ov]');
     if(b) b.onclick=()=>{ const k=b.dataset.ov; setOverride(selDate, k==='reset'?null:(k==='add')); };
   }
 
-  function renderAgenda(){
-    const el=$('#agenda'); const list=agendaFor(selDate);
-    let html=list.map(e=>{
-      const t=EV_TYPES[e.type]||EV_TYPES.other, dim=e.off||e.cancelled;
-      const sub = e.off ? 'not scheduled' : e.cancelled ? 'cancelled' : fmtTime(e.time);
-      return `<button class="ag-chip ${e.key===selEvent?'on':''} ${dim?'dim':''}" data-ev="${e.key}"><span class="dot" style="background:${t.color}"></span><span class="nm">${escapeHtml(evLabel(e))}</span><span class="t">${sub}</span></button>`;
-    }).join('');
-    if(canEdit) html+=`<button class="linkbtn" id="agAdd">+ Add event</button>`;
-    el.innerHTML=html;
-    el.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{ selEvent=b.dataset.ev; renderDaily(); });
-    const add=$('#agAdd'); if(add) add.onclick=()=>openEventModal(selDate);
-  }
-  function renderEvTag(e){
-    const el=$('#evTag');
-    let html=`<span class="pill">${escapeHtml(evLabel(e))}${e.time?', '+fmtTime(e.time):''}</span>`;
-    if(e.kind==='recurring'){
-      const days=DOW.filter(([n])=>(e.tpl.days||[]).includes(n)).map(([,l])=>l).join(', ');
-      html+= e.cancelled ? `<span>Cancelled for this date.</span>` : `<span>Every week: ${days}. Attendance only.</span>`;
-      if(canEdit) html+= e.cancelled ? `<button class="linkbtn" data-evact="restore">Restore</button>` : `<button class="linkbtn" data-evact="skip">Cancel this date</button>`;
-    } else {
-      html+=`<span>${escapeHtml((EV_TYPES[e.type]||EV_TYPES.other).label)}. Attendance only.</span>`;
-      if(canEdit) html+=`<button class="linkbtn" data-evact="remove">Remove event</button>`;
-    }
-    el.className='daytag'+(e.cancelled?' off':''); el.innerHTML=html;
-    const b=el.querySelector('[data-evact]');
-    if(b) b.onclick=()=>{
-      const a=b.dataset.evact;
-      if(a==='skip') saveSettings({eventSkips:{[selDate+'__'+e.key]:true}});
-      else if(a==='restore') saveSettings({eventSkips:{[selDate+'__'+e.key]:fb.deleteField()}});
-      else if(a==='remove' && confirm('Remove '+evLabel(e)+' on '+shortDate(selDate)+'? Its check-ins stay saved.')) removeOneOff(e.key);
-    };
-  }
-  function saveSettings(obj){ return fb.setDoc(settingsDoc(), obj, {merge:true}).catch(()=>banner('Could not save the schedule.',true)); }
-  function removeOneOff(id){ selEvent=defaultEvent(selDate); return saveSettings({oneOffEvents:(schedule.oneOffEvents||[]).filter(o=>o.id!==id)}); }
-  function removeTemplate(id){ return saveSettings({eventTemplates:(schedule.eventTemplates||[]).filter(t=>t.id!==id)}); }
-  function renderEventRoster(e){
-    const el=$('#roster');
-    $('#missBar').classList.add('hidden');
-    if(!roster.length){ el.innerHTML=`<div class="empty"><p>No wrestlers yet.</p></div>`; updateEventCounts(); return; }
-    const dis=(canEdit&&!e.cancelled)?'':'disabled';
-    let rows=`<div class="row head evrow"><div>Wrestler</div><div>Attendance</div></div>`;
-    roster.forEach(r=>{
-      const st=evStatus(e.key,r.id);
-      rows+=`<div class="row evrow" data-eid="${r.id}">
-        <div class="wrestler clickable" data-profile="${r.id}" title="Open profile"><div class="avatar" style="background:${colorFor(r.id)}">${initials(r.name)}</div><div style="min-width:0"><div class="wname">${escapeHtml(r.name)}<span class="chev">›</span></div>${r.wclass?`<div class="wclass">${escapeHtml(r.wclass)} lb class</div>`:''}</div></div>
-        <div class="status-group ${dis?'ro':''}">${STATUSES.map(s=>`<button data-evs="${s}" ${st===s?`data-on="${s}"`:''} ${dis}>${s[0].toUpperCase()+s.slice(1)}</button>`).join('')}</div>
-      </div>`;
-    });
-    el.innerHTML=rows;
-    el.querySelectorAll('.row[data-eid]').forEach(row=>{
-      const id=row.dataset.eid;
-      row.querySelectorAll('[data-evs]').forEach(btn=>btn.onclick=()=>setEvStatus(id,btn.dataset.evs));
-      row.querySelector('[data-profile]').onclick=()=>openProfile(id);
-    });
-    updateEventCounts();
-  }
-  function patchEvent(){
-    const e=curEvent(); if(!e||e.key==='practice') return;
-    const rows=document.querySelectorAll('.row[data-eid]');
-    if(rows.length!==roster.length) return renderEventRoster(e);
-    rows.forEach(row=>{ const st=evStatus(e.key,row.dataset.eid); row.querySelectorAll('[data-evs]').forEach(b=>{ if(b.dataset.evs===st) b.setAttribute('data-on',st); else b.removeAttribute('data-on'); }); });
-    updateEventCounts();
-  }
-  function updateEventCounts(){
-    let p=0,a=0,x=0,u=0;
-    roster.forEach(r=>{ const st=evStatus(selEvent,r.id); if(st==='present')p++; else if(st==='absent')a++; else if(st==='excused')x++; else u++; });
-    $('#cPresent').textContent=p; $('#cAbsent').textContent=a; $('#cExcused').textContent=x; $('#cWeigh').textContent=u;
-  }
   function renderDaily(){
     $('#dayTitle').textContent=prettyDate(selDate);
-    renderAgenda();
-    const ev=curEvent(); if(ev) selEvent=ev.key;
-    const isPrac=selEvent==='practice';
-    $('#dayTag').classList.toggle('hidden', !isPrac);
-    $('#evTag').classList.toggle('hidden', isPrac);
-    $('#lWeigh').textContent = isPrac ? 'Weighed In' : 'Unmarked';
-    $('#dayHint').textContent = isPrac ? 'Tap a status, then enter weigh-in. Tap a name to open their profile.' : 'Tap a status. No weigh-in for this event.';
-    if(!isPrac){ renderEvTag(ev); renderEventRoster(ev); return; }
     renderDayTag();
     const el=$('#roster');
     if(roster.length===0){
@@ -1192,6 +1240,8 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     $('#pName').textContent=w.name;
     const bits=[w.wclass ? (w.wclass+' lb weight class') : 'No weight class set'];
     if(w.grade) bits.push('Grade '+w.grade);
+    if(w.lineupRole) bits.push(roleLong(w.lineupRole));
+    if(w.lineupClass) bits.push('locked at '+w.lineupClass);
     $('#pClass').textContent = bits.join(', ');
   }
   function openProfile(wid){
@@ -1484,11 +1534,6 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   }
 
   function exportDayCSV(){
-    if(selEvent!=='practice'){
-      const e=curEvent(), rows=[['Date','Event','Type','Time','Wrestler','Weight Class','Status']];
-      roster.forEach(r=>rows.push([selDate, evLabel(e), (EV_TYPES[e.type]||EV_TYPES.other).label, fmtTime(e.time), r.name, r.wclass||'', evStatus(e.key,r.id)||'']));
-      return downloadCSV(rows, 'event_'+selDate+'_'+evLabel(e).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.csv');
-    }
     const hdr=['Date','Practice Day','Wrestler','Weight Class','Status','Weight (lb)','Change vs Last','Vs Class'];
     if(canEdit) hdr.push('Min Weight','Vs Min','Absence Reason');
     const rows=[hdr];
@@ -1534,57 +1579,32 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     st.textContent = kioskPinHash ? 'PIN is set' : 'Not set';
     b.textContent = kioskPinHash ? 'Change PIN' : 'Set PIN';
   }
-  function kioskOptions(){ return eventsOn(todayStr()); }
-  function chooseKioskEvent(cb){
-    const opts=kioskOptions();
-    if(opts.length<=1){ cb(opts.length?opts[0].key:'practice'); return; }
-    $('#kChoiceList').innerHTML=opts.map(e=>`<button data-kc="${e.key}"><span>${escapeHtml(evLabel(e))}</span><span class="t">${fmtTime(e.time)}</span></button>`).join('');
-    $('#kChoiceList').querySelectorAll('[data-kc]').forEach(b=>b.onclick=()=>{ $('#kChoose').classList.add('hidden'); cb(b.dataset.kc); });
-    $('#kChoose').classList.remove('hidden');
-  }
   function enterKiosk(resume){
     if(!canEdit) return;
     if(!kioskPinHash && !resume){ askPin('set', ()=>enterKiosk()); return; }
-    if(!resume){ chooseKioskEvent(k=>startKiosk(k)); return; }
-    const saved=lsGet(KIOSK_EV_KEY);
-    startKiosk(kioskOptions().some(e=>e.key===saved) ? saved : defaultEvent(todayStr()));
-  }
-  function startKiosk(evKey){
-    kEvent=evKey||'practice'; lsSet(KIOSK_EV_KEY,kEvent);
     if(profileOpenId) closeProfile();
     $('#schedScrim').classList.remove('open'); $('#scrim').classList.remove('open');
     if(view!=='day') setView('day');
     if(selDate!==todayStr()) changeDate(todayStr());
-    selEvent=kEvent; renderDaily();
     kioskOn=true; lsSet(KIOSK_KEY,'1');
     $('#kiosk').classList.remove('hidden');
     $('#kSearch').value='';
     renderKiosk();
     clearInterval(kDayTimer);
-    kDayTimer=setInterval(()=>{ if(kioskOn && selDate!==todayStr()){
-      changeDate(todayStr());
-      if(!kioskOptions().some(e=>e.key===kEvent)){ kEvent=defaultEvent(todayStr()); lsSet(KIOSK_EV_KEY,kEvent); }
-      selEvent=kEvent; renderDaily(); renderKiosk();
-    } }, 60000);
+    kDayTimer=setInterval(()=>{ if(kioskOn && selDate!==todayStr()){ changeDate(todayStr()); renderKiosk(); } }, 60000);
   }
   function hideKioskUI(){
     kioskOn=false; kSelId=null; clearTimeout(kIdle); clearTimeout(kDoneTimer); clearInterval(kDayTimer);
-    ['#kiosk','#kSheet','#kDone','#pinSheet','#kChoose'].forEach(id=>$(id).classList.add('hidden'));
+    ['#kiosk','#kSheet','#kDone','#pinSheet'].forEach(id=>$(id).classList.add('hidden'));
   }
-  function exitKiosk(){ hideKioskUI(); lsSet(KIOSK_KEY,null); lsSet(KIOSK_EV_KEY,null); renderDaily(); }
-  function kIsPractice(){ return kEvent==='practice'; }
-  function kCheckedIn(id){
-    if(!kIsPractice()) return evStatus(kEvent,id)==='present';
-    const rec=attendance[id]||{}; return rec.status==='present' && validW(rec.weight);
-  }
+  function exitKiosk(){ hideKioskUI(); lsSet(KIOSK_KEY,null); renderDaily(); }
+  function kCheckedIn(id){ const rec=attendance[id]||{}; return rec.status==='present' && validW(rec.weight); }
   function renderKiosk(){
     if(!kioskOn) return;
-    const ke=agendaFor(selDate).find(e=>e.key===kEvent);
-    $('#kTitle').textContent=(kIsPractice()?'Practice':(ke?evLabel(ke):'Event'))+' check-in';
-    $('#kDate').textContent=prettyDate(selDate)+(ke&&ke.time?', '+fmtTime(ke.time):'');
-    const note=$('#kNote'), showNote=kIsPractice() && !isPractice(selDate);
-    note.classList.toggle('hidden', !showNote);
-    if(showNote) note.textContent='Today isn’t on the practice schedule. Check-ins still save, and a coach can make today a practice day.';
+    $('#kDate').textContent=prettyDate(selDate);
+    const note=$('#kNote'), prac=isPractice(selDate);
+    note.classList.toggle('hidden', prac);
+    if(!prac) note.textContent='Today isn’t on the practice schedule. Check-ins still save, and a coach can make today a practice day.';
     const q=$('#kSearch').value.trim().toLowerCase();
     const list=roster.filter(r=>!q || (r.name||'').toLowerCase().includes(q));
     const g=$('#kGrid');
@@ -1601,31 +1621,15 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     const r=roster.find(x=>x.id===id); if(!r) return;
     kSelId=id;
     $('#kName').textContent=r.name;
-    const prac=kIsPractice(), done=kCheckedIn(id);
-    $('#kWtBox').classList.toggle('hidden', !prac);
-    if(prac) $('#kSub').textContent = done ? 'You’re already checked in. Enter your weight again only if it was wrong.' : 'Step on the scale and enter your weight.';
-    else $('#kSub').textContent = done ? 'You’re already checked in. You’re all set.' : 'Tap below to check in.';
-    $('#kSubmit').textContent = prac ? 'Check in' : 'I’m here';
-    $('#kSubmit').classList.toggle('hidden', !prac && done);
+    $('#kSub').textContent = kCheckedIn(id) ? 'You’re already checked in. Enter your weight again only if it was wrong.' : 'Step on the scale and enter your weight.';
     $('#kWeight').value=''; $('#kErr').textContent=''; $('#kSubmit').disabled=false;
     $('#kSheet').classList.remove('hidden');
-    if(prac) setTimeout(()=>$('#kWeight').focus(), 50);
+    setTimeout(()=>$('#kWeight').focus(), 50);
     kResetIdle();
   }
   function kClose(){ kSelId=null; clearTimeout(kIdle); $('#kSheet').classList.add('hidden'); }
   async function kSubmit(){
     const id=kSelId; if(!id) return;
-    if(!kIsPractice()){
-      $('#kSubmit').disabled=true;
-      try{ await writeEvStatus(selDate,kEvent,id,'present'); }
-      catch(e){ $('#kErr').textContent='Couldn’t save. Ask a coach for help.'; $('#kSubmit').disabled=false; return; }
-      const r=roster.find(x=>x.id===id), ke=agendaFor(selDate).find(e=>e.key===kEvent);
-      kClose(); $('#kSearch').value='';
-      $('#kDoneName').textContent=r?r.name:''; $('#kDoneSub').textContent='You’re checked in for '+(ke?evLabel(ke):'this event')+'.';
-      $('#kDone').classList.remove('hidden'); renderKiosk();
-      clearTimeout(kDoneTimer); kDoneTimer=setTimeout(()=>$('#kDone').classList.add('hidden'), 2200);
-      return;
-    }
     const w=parseFloat($('#kWeight').value);
     if(isNaN(w) || w<60 || w>400){ $('#kErr').textContent='That doesn’t look right. Check the scale and try again.'; $('#kWeight').focus(); return; }
     const wt=Math.round(w*10)/10, d=selDate, cur=attendance[id]||{};
@@ -1692,8 +1696,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     renderPinState();
     schedDraft={days:[...schedule.practiceDays]};
     $('#seasonStart').value=schedule.seasonStart||'';
-    $('#practiceTime').value=schedule.practiceTime||'15:00';
-    renderDow(); renderOverrides(); renderEvList();
+    renderDow(); renderOverrides();
     $('#schedScrim').classList.add('open');
   }
   function closeSchedule(){ $('#schedScrim').classList.remove('open'); schedDraft=null; }
@@ -1713,60 +1716,11 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     el.innerHTML=keys.map(k=>`<div class="ovrow"><span>${escapeHtml(shortDate(k))}</span><span class="ovk ${schedule.overrides[k]?'add':'cancel'}">${schedule.overrides[k]?'Added':'Cancelled'}</span><button class="linkbtn" data-rm="${k}">Remove</button></div>`).join('');
     el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>setOverride(b.dataset.rm,null));
   }
-  function renderEvList(){
-    const el=$('#evList'); if(!el) return;
-    const today=todayStr();
-    const tpls=(schedule.eventTemplates||[]).slice().sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-    const ones=(schedule.oneOffEvents||[]).filter(o=>o.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-    if(!tpls.length && !ones.length){ el.innerHTML='<div class="ovempty">No lifts, duals, or tournaments yet.</div>'; return; }
-    const dayNames=t=>DOW.filter(([n])=>(t.days||[]).includes(n)).map(([,l])=>l).join(', ');
-    el.innerHTML = tpls.map(t=>`<div class="ovrow"><span><b>${escapeHtml(evLabel(t))}</b><br><span style="font-size:12px;color:var(--ink-soft)">Every ${dayNames(t)}, ${fmtTime(t.time)}</span></span><button class="linkbtn" data-rmt="${t.id}">Remove</button></div>`).join('')
-      + ones.map(o=>`<div class="ovrow"><span><b>${escapeHtml(evLabel(o))}</b><br><span style="font-size:12px;color:var(--ink-soft)">${escapeHtml(shortDate(o.date))}, ${fmtTime(o.time)}</span></span><button class="linkbtn" data-rmo="${o.id}">Remove</button></div>`).join('');
-    el.querySelectorAll('[data-rmt]').forEach(b=>b.onclick=()=>{ const t=tpls.find(x=>x.id===b.dataset.rmt); if(confirm('Stop repeating '+evLabel(t)+'? Past check-ins stay saved.')) removeTemplate(b.dataset.rmt); });
-    el.querySelectorAll('[data-rmo]').forEach(b=>b.onclick=()=>{ const o=ones.find(x=>x.id===b.dataset.rmo); if(confirm('Remove '+evLabel(o)+' on '+shortDate(o.date)+'?')) removeOneOff(b.dataset.rmo); });
-  }
-  // ---- Add-event modal ----
-  let evTitleTouched=false;
-  function openEventModal(date){
-    if(!canEdit) return;
-    const d=date||todayStr();
-    $('#evType').value='lift'; $('#evTitle').value='Morning lift'; evTitleTouched=false;
-    $('#evTime').value='06:30'; $('#evRepeat').value='once'; $('#evDate').value=d;
-    evDraftDays=[parseLocal(d).getDay()]; drawEvDays(); syncEvRepeat();
-    $('#evScrim').classList.add('open');
-  }
-  function drawEvDays(){
-    const g=$('#evDays');
-    g.innerHTML=DOW.map(([n,l])=>`<button type="button" data-evd="${n}" aria-pressed="${evDraftDays.includes(n)}">${l}</button>`).join('');
-    g.querySelectorAll('[data-evd]').forEach(b=>b.onclick=()=>{ const n=+b.dataset.evd, i=evDraftDays.indexOf(n); if(i>=0) evDraftDays.splice(i,1); else evDraftDays.push(n); b.setAttribute('aria-pressed', evDraftDays.includes(n)); });
-  }
-  function syncEvRepeat(){ const w=$('#evRepeat').value==='weekly'; $('#evDaysWrap').classList.toggle('hidden',!w); $('#evDateWrap').querySelector('label').textContent = w ? 'Starting' : 'Date'; }
-  async function saveEvent(){
-    const type=$('#evType').value, title=$('#evTitle').value.trim()||EV_TYPES[type].label, time=$('#evTime').value, date=$('#evDate').value;
-    if(!time){ $('#evTime').focus(); return; }
-    if(!date){ $('#evDate').focus(); return; }
-    let obj, key;
-    if($('#evRepeat').value==='weekly'){
-      if(!evDraftDays.length){ banner('Pick at least one day for a weekly event.', true); return; }
-      key=newId('t'); obj={eventTemplates:[...(schedule.eventTemplates||[]), {id:key, type, title, time, days:[...evDraftDays].sort(), from:date}]};
-    } else {
-      key=newId('o'); obj={oneOffEvents:[...(schedule.oneOffEvents||[]), {id:key, type, title, time, date}]};
-    }
-    $('#evSave').disabled=true;
-    try{
-      await fb.setDoc(settingsDoc(), obj, {merge:true});
-      $('#evScrim').classList.remove('open');
-      if(date===selDate || ($('#evRepeat').value==='weekly' && evDraftDays.includes(parseLocal(selDate).getDay()) && selDate>=date)) selEvent=key;
-      banner(title+' added.');
-    } catch(e){ banner('Could not add the event.', true); }
-    finally{ $('#evSave').disabled=false; }
-  }
-
   async function saveSchedule(){
     if(!canEdit||!schedDraft) return;
     const btn=$('#schedSave'); btn.disabled=true;
     try{
-      await fb.setDoc(settingsDoc(), {practiceDays:[...schedDraft.days].sort(), seasonStart:$('#seasonStart').value||'', practiceTime:$('#practiceTime').value||'15:00'}, {merge:true});
+      await fb.setDoc(settingsDoc(), {practiceDays:[...schedDraft.days].sort(), seasonStart:$('#seasonStart').value||''}, {merge:true});
       closeSchedule(); banner('Practice schedule saved.');
       if(profileOpenId) renderProfile(profileOpenId);
     } catch(e){ banner('Could not save the schedule. Check that the updated Firestore rules are published.',true); }
@@ -1774,20 +1728,31 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   }
 
   function syncDateInput(){ $('#dateInput').value=selDate; }
-  function changeDate(nd){ selDate=nd; selEvent=defaultEvent(nd); syncDateInput(); watchDate(); renderDaily(); }
+  function changeDate(nd){ selDate=nd; syncDateInput(); watchDate(); renderDaily(); }
   function shiftDate(n){ changeDate(addDays(selDate,n)); }
   function setView(v){
     view=v;
-    $('#tabDay').classList.toggle('active',v==='day'); $('#tabWeek').classList.toggle('active',v==='week');
-    $('#dailyView').classList.toggle('hidden',v!=='day'); $('#weekView').classList.toggle('hidden',v!=='week');
+    $('#tabDay').classList.toggle('active',v==='day'); $('#tabWeek').classList.toggle('active',v==='week'); $('#tabLineup').classList.toggle('active',v==='lineup');
+    $('#dailyView').classList.toggle('hidden',v!=='day'); $('#weekView').classList.toggle('hidden',v!=='week'); $('#lineupView').classList.toggle('hidden',v!=='lineup');
     $('#dateNav').style.visibility=v==='day'?'visible':'hidden';
-    if(v==='week'){ watchWeek(); renderWeek(); } else renderDaily();
+    if(v==='week'){ watchWeek(); renderWeek(); }
+    else if(v==='lineup'){ renderLineup(); if(!luLoaded && !luLoading) loadLineupWeights(); }
+    else renderDaily();
   }
 
   // wire UI
   $('#prevDay').onclick=()=>shiftDate(-1); $('#nextDay').onclick=()=>shiftDate(1);
   $('#todayBtn').onclick=()=>changeDate(todayStr()); $('#dateInput').onchange=e=>changeDate(e.target.value);
-  $('#tabDay').onclick=()=>setView('day'); $('#tabWeek').onclick=()=>setView('week');
+  $('#tabDay').onclick=()=>setView('day'); $('#tabWeek').onclick=()=>setView('week'); $('#tabLineup').onclick=()=>setView('lineup');
+  $('#luRefresh').onclick=()=>loadLineupWeights();
+  $('#luExport').onclick=exportLineupCSV;
+  $('#luMode').onchange=()=>{ schedule.lineupMode=$('#luMode').value; renderLineup(); saveSettings({lineupMode:schedule.lineupMode}); };
+  let luAllowT=null;
+  $('#luAllow').oninput=()=>{ const v=parseFloat($('#luAllow').value); schedule.lineupAllowance=isNaN(v)||v<0?0:Math.min(v,15); renderLineup(); clearTimeout(luAllowT); luAllowT=setTimeout(()=>saveSettings({lineupAllowance:schedule.lineupAllowance}),600); };
+  $('#luSave').onclick=saveLineupEdit;
+  $('#luCancel').onclick=()=>{ $('#luScrim').classList.remove('open'); luEditId=null; };
+  $('#luScrim').onclick=e=>{ if(e.target.id==='luScrim'){ $('#luScrim').classList.remove('open'); luEditId=null; } };
+  $('#luProfile').onclick=()=>{ const id=luEditId; $('#luScrim').classList.remove('open'); luEditId=null; if(id) openProfile(id); };
   $('#prevWeek').onclick=()=>{weekStart=addDays(weekStart,-7);watchWeek();renderWeek();};
   $('#nextWeek').onclick=()=>{weekStart=addDays(weekStart,7);watchWeek();renderWeek();};
   $('#thisWeek').onclick=()=>{weekStart=mondayOf(todayStr());watchWeek();renderWeek();};
@@ -1798,17 +1763,6 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   scrim.onclick=e=>{ if(e.target===scrim) scrim.classList.remove('open'); };
   $('#saveAdd').onclick=()=>{ const n=$('#fName').value.trim(); if(!n){$('#fName').focus();return;} addWrestler(n,$('#fClass').value.trim()); scrim.classList.remove('open'); };
   $('#fName').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();}; $('#fClass').onkeydown=e=>{if(e.key==='Enter')$('#saveAdd').click();};
-
-  // Event modal wiring
-  $('#evCancel').onclick=()=>$('#evScrim').classList.remove('open');
-  $('#evScrim').onclick=e=>{ if(e.target.id==='evScrim') $('#evScrim').classList.remove('open'); };
-  $('#evSave').onclick=saveEvent;
-  $('#evRepeat').onchange=syncEvRepeat;
-  $('#evTitle').oninput=()=>{ evTitleTouched=true; };
-  $('#evType').onchange=()=>{ const t=$('#evType').value; if(!evTitleTouched) $('#evTitle').value = t==='lift'?'Morning lift':t==='other'?'':EV_TYPES[t].label; if(t!=='lift' && $('#evTime').value==='06:30') $('#evTime').value=''; };
-  $('#evDate').onchange=()=>{ const d=$('#evDate').value; if(d && $('#evRepeat').value==='once'){ evDraftDays=[parseLocal(d).getDay()]; drawEvDays(); } };
-  $('#schedAddEv').onclick=()=>openEventModal(todayStr());
-  $('#kChooseCancel').onclick=()=>$('#kChoose').classList.add('hidden');
 
   // Wrestler Mode wiring
   $('#kioskBtn').onclick=()=>enterKiosk();
@@ -1838,7 +1792,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   const pscrim=$('#profileScrim');
   $('#profileClose').onclick=closeProfile;
   pscrim.onclick=e=>{ if(e.target===pscrim) closeProfile(); };
-  document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(kioskOn){ if(!$('#pinSheet').classList.contains('hidden')) $('#pinSheet').classList.add('hidden'); else kClose(); return; } if(sscrim.classList.contains('open')) closeSchedule(); else if(profileOpenId) closeProfile(); });
+  document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(kioskOn){ if(!$('#pinSheet').classList.contains('hidden')) $('#pinSheet').classList.add('hidden'); else kClose(); return; } if($('#luScrim').classList.contains('open')){ $('#luScrim').classList.remove('open'); luEditId=null; } else if(sscrim.classList.contains('open')) closeSchedule(); else if(profileOpenId) closeProfile(); });
 
   syncDateInput();
 }
