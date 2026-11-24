@@ -263,6 +263,88 @@
     .tab-actions { margin-left:0; width:100%; justify-content:flex-start; }
   }
 
+  /* ---- v1.8 dual results ---- */
+  .res-top { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+  .res-stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 18px; box-shadow:var(--shadow); min-width:150px; }
+  .res-stat .n { font-family:'Oswald',sans-serif; font-size:30px; font-weight:600; line-height:1; }
+  .res-stat .l { font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); font-weight:600; margin-top:6px; }
+  .res-list { display:flex; flex-direction:column; gap:10px; }
+  .res-card { display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 16px; box-shadow:var(--shadow); cursor:pointer; text-align:left; width:100%; color:var(--ink); font-family:'Inter',sans-serif; }
+  .res-card:hover { border-color:var(--ink-soft); }
+  .res-badge { flex:none; width:74px; text-align:center; border-radius:9px; padding:8px 4px; font-family:'Oswald',sans-serif; color:#fff; background:#8a96a3; }
+  .res-badge b { display:block; font-size:18px; line-height:1; } .res-badge span { font-size:13px; }
+  .res-badge.W { background:var(--present); } .res-badge.L { background:var(--absent); } .res-badge.T { background:#c9a227; }
+  .res-card .rc-main { flex:1; min-width:0; }
+  .res-card .rc-opp { font-weight:700; font-size:15.5px; }
+  .res-card .rc-sub { font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .res-empty { background:var(--card); border:1px dashed var(--line); border-radius:12px; padding:28px; text-align:center; color:var(--ink-soft); font-size:14px; }
+  .res-back { margin-bottom:12px; }
+  .res-head { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px; }
+  .res-head .rh-fields { display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; }
+  .res-head .field { margin-bottom:0; }
+  .res-score { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); flex-wrap:wrap; }
+  .res-score .side { text-align:center; min-width:90px; }
+  .res-score .side .t { font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); font-weight:600; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .res-score .side .v { font-family:'Oswald',sans-serif; font-size:40px; font-weight:600; line-height:1.05; }
+  .res-score .dash { font-family:'Oswald',sans-serif; font-size:28px; color:var(--ink-soft); }
+  .res-score .out { flex-basis:100%; text-align:center; font-size:12.5px; color:var(--ink-soft); }
+  .res-score .out b.W { color:var(--present); } .res-score .out b.L { color:var(--absent); } .res-score .out b.T { color:#c9a227; }
+  .res-sec { background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden; }
+  .res-sec h3 { font-family:'Oswald',sans-serif; font-size:15px; letter-spacing:.4px; text-transform:uppercase; margin:0; padding:12px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .res-sec h3 small { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--ink-soft); }
+  .bout { display:grid; grid-template-columns:58px minmax(140px,1.2fr) auto 1.6fr 52px; gap:10px; align-items:center; padding:10px 16px; border-bottom:1px solid var(--line); }
+  .bout:last-child { border-bottom:none; }
+  .bout.jv { grid-template-columns:78px minmax(140px,1.2fr) auto 1.6fr 52px; }
+  .b-cls { font-family:'Oswald',sans-serif; font-size:19px; font-weight:600; }
+  .b-cls select { width:100%; padding:6px; }
+  .b-who select { width:100%; padding:7px 8px; }
+  .b-res { display:flex; gap:4px; }
+  .b-res button, .b-how button { border:1px solid var(--line); background:var(--canvas); color:var(--ink); border-radius:7px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; }
+  .b-res button { width:38px; height:34px; font-size:13px; }
+  .b-res button:disabled { opacity:.35; cursor:default; }
+  .b-res button.dff { width:auto; padding:0 7px; font-size:10.5px; font-weight:600; color:var(--ink-soft); }
+  .b-res button.on.W { background:var(--present); border-color:var(--present); color:#fff; }
+  .b-res button.on.L { background:var(--absent); border-color:var(--absent); color:#fff; }
+  .b-res button.on.dff { background:#8a96a3; border-color:#8a96a3; color:#fff; }
+  .b-detail { display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .b-how { display:flex; flex-wrap:wrap; gap:4px; }
+  .b-how button { padding:5px 8px; font-size:11.5px; font-weight:600; }
+  .b-how button.on { background:var(--mat); border-color:var(--mat); color:#f5f2ec; }
+  .b-inputs { display:flex; gap:6px; }
+  .b-inputs input { min-width:0; padding:6px 8px; font-size:12.5px; border:1px solid var(--line); border-radius:7px; background:var(--canvas); color:var(--ink); }
+  .b-inputs input.sc { width:92px; flex:none; }
+  .b-inputs input.op { flex:1; }
+  .b-pts { text-align:right; font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; }
+  .b-pts.us { color:var(--present); } .b-pts.them { color:var(--absent); }
+  .b-pts small { display:block; font-family:'Inter',sans-serif; font-size:9.5px; font-weight:600; color:var(--ink-soft); text-transform:uppercase; }
+  .b-hint { font-size:11.5px; color:var(--ink-soft); }
+  .b-del { background:none; border:none; color:var(--ink-soft); font-size:18px; cursor:pointer; padding:0 4px; }
+  .res-foot { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .res-rules { background:var(--flag-bg); color:var(--flag); border-radius:10px; padding:14px 16px; font-size:13.5px; line-height:1.5; }
+  .res-rules pre { background:var(--card); color:var(--ink); border-radius:7px; padding:10px; font-size:12px; overflow-x:auto; margin:8px 0 0; }
+  .rec-box { background:var(--canvas); border:1px solid var(--line); border-radius:9px; padding:13px 15px; margin-bottom:20px; }
+  .rec-nums { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-end; }
+  .rec-nums .rn { font-family:'Oswald',sans-serif; font-size:30px; font-weight:600; line-height:1; }
+  .rec-nums .rl { font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); font-weight:600; margin-top:4px; }
+  .rec-break { font-size:12.5px; color:var(--ink-soft); margin-top:9px; line-height:1.5; }
+  .rec-break b { color:var(--ink); font-weight:600; }
+  .rec-list { margin-top:12px; border-top:1px solid var(--line); }
+  .rec-row { display:grid; grid-template-columns:56px 1fr auto; gap:10px; padding:7px 2px; border-bottom:1px solid var(--line); font-size:13px; cursor:pointer; align-items:center; }
+  .rec-row:last-child { border-bottom:none; }
+  .rec-row:hover { background:var(--card); }
+  .rec-row .rd { color:var(--ink-soft); font-size:12px; }
+  .rec-row .rr { font-weight:600; text-align:right; white-space:nowrap; }
+  .rec-row .rr.W { color:var(--present); } .rec-row .rr.L { color:var(--absent); }
+  .rec-row .ro { font-size:11.5px; color:var(--ink-soft); }
+  .lvl { display:inline-block; font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:4px; background:var(--line); color:var(--ink-soft); margin-left:5px; vertical-align:1px; }
+  @media (max-width:720px){
+    .res-head .rh-fields { grid-template-columns:1fr 1fr; } .res-head .rh-fields .field:first-child { grid-column:1 / -1; }
+    .bout, .bout.jv { grid-template-columns:52px 1fr 46px; grid-template-areas:"cls who pts" "res res res" "det det det"; row-gap:8px; padding:12px; }
+    .bout .b-cls { grid-area:cls; } .bout .b-who { grid-area:who; } .bout .b-res { grid-area:res; } .bout .b-detail { grid-area:det; } .bout .b-pts { grid-area:pts; }
+    .b-res button { width:auto; flex:1; height:38px; }
+    .bout.jv .b-cls select { padding:5px 2px; font-size:13px; }
+  }
+
   /* ---- v1.7 dashboard ---- */
   .dash-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:16px; }
   .dash-card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); }
@@ -593,6 +675,7 @@
     <button class="tab active" id="tabDay">Daily</button>
     <button class="tab" id="tabWeek">Weekly Summary</button>
     <button class="tab" id="tabLineup">Lineup</button>
+    <button class="tab" id="tabRes">Results</button>
     <button class="tab" id="tabDash">Dashboard</button>
     <div class="viewbadge hidden" id="viewBadge">
       <svg class="lockico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -640,6 +723,8 @@
     <div class="rate-cap">Att. Rate counts scheduled practices where attendance was taken. Unmarked counts as missed; excused doesn’t count against a wrestler.</div>
   </div>
 
+  <div id="resView" class="hidden"><div id="resBody"></div></div>
+
   <div id="dashView" class="hidden">
     <div class="toolbar">
       <div>
@@ -661,6 +746,7 @@
         <div class="hint">Built from each wrestler’s latest weigh-in and role. Tap a wrestler to change their role or class<span id="luHintWho">, or tap a class to see who can make it</span>.</div>
       </div>
       <div class="btn-row">
+        <button class="ghost-btn" id="luStartDual">Start a dual</button>
         <button class="ghost-btn" id="luRefresh">Refresh weights</button>
         <button class="ghost-btn" id="luPrint">Print lineup</button>
         <button class="ghost-btn" id="luSaveBtn">Save lineup</button>
@@ -852,7 +938,11 @@ const app = initializeApp(firebaseConfig);
    Shown in the footer; open copies compare against it to offer
    "New version available".
    ============================================================ */
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.8';
+
+/* Dual results: set to false to hide the Results tab, the "Start a dual"
+   button, and the Record section in profiles. Saved results are kept. */
+const DUALS_ENABLED = true;
 
 /* ============================================================
    DASHBOARD SECTIONS — set any to false to hide that section.
@@ -1326,6 +1416,179 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     downloadCSV(rows, 'lineup_'+todayStr()+'.csv');
   }
 
+  // ---- Dual results ----
+  // duals/{dualId} = { opponent, date, site, created, by, bouts:[{id, level:'V'|'JV', cls, wid, name, result:'W'|'L'|'DFF'|'', how, score, opp}] }
+  const WIN_TYPES=[['F','Fall',6],['TF','Tech fall',5],['MD','Major',4],['D','Decision',3],['FF','Forfeit',6],['DEF','Default',6],['DQ','DQ',6]];
+  const WT=Object.fromEntries(WIN_TYPES.map(([k,l,p])=>[k,{label:l,pts:p}]));
+  const SITES={home:'Home', away:'Away', neutral:'Neutral'};
+  let duals={}, unsubDuals=null, resOpen=null, resTimers={}, dualsErr=false;
+  const rid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const dualRef=id=>fb.doc(fdb,'duals',id);
+  function watchDuals(){
+    if(!DUALS_ENABLED) return;
+    unsubDuals=fb.onSnapshot(fb.collection(fdb,'duals'), snap=>{
+      const next={};
+      snap.docs.forEach(x=>{ next[x.id] = (resTimers[x.id] && duals[x.id]) ? duals[x.id] : {id:x.id, ...x.data()}; });
+      duals=next; dualsErr=false;
+      if(view==='results') renderResultsSafe();
+      if(profileOpenId){ const el=$('#pRecord'); if(el) el.innerHTML=recordHtml(profileOpenId); wireRecord(); }
+    }, err=>{ dualsErr=true; if(view==='results') renderResults(); });
+  }
+  function boutPts(b){ if(b.result==='W'&&WT[b.how]) return {us:WT[b.how].pts, them:0}; if(b.result==='L'&&WT[b.how]) return {us:0, them:WT[b.how].pts}; return {us:0,them:0}; }
+  function dualScore(d){
+    let us=0, them=0, entered=0, total=0;
+    (d.bouts||[]).filter(b=>b.level==='V').forEach(b=>{ total++; if(b.result==='DFF' || (b.result && b.how)) entered++; const p=boutPts(b); us+=p.us; them+=p.them; });
+    const out = entered ? (us>them?'W':us<them?'L':'T') : '';
+    return {us, them, entered, total, out};
+  }
+  function sortedDuals(){ return Object.values(duals).sort((a,b)=>(b.date||'').localeCompare(a.date||'') || (b.created||0)-(a.created||0)); }
+  function resultTxt(b){
+    if(b.result==='DFF') return 'Double forfeit';
+    if(!b.result) return '';
+    let t=b.result+(b.how?' '+WT[b.how].label:'');
+    if(b.score && !['FF','DEF','DQ'].includes(b.how)) t+=' '+b.score;
+    return t;
+  }
+  function recordFor(wid){
+    const rec={V:{w:0,l:0,by:{}}, JV:{w:0,l:0,by:{}}, matches:[]};
+    Object.values(duals).forEach(d=>(d.bouts||[]).forEach(b=>{
+      if(b.wid!==wid || !['W','L'].includes(b.result) || !b.how) return;
+      const r=rec[b.level==='JV'?'JV':'V'];
+      if(b.result==='W'){ r.w++; r.by[b.how]=(r.by[b.how]||0)+1; } else r.l++;
+      rec.matches.push({d,b});
+    }));
+    rec.matches.sort((a,b)=>(b.d.date||'').localeCompare(a.d.date||''));
+    return rec;
+  }
+  function recordHtml(wid){
+    if(!DUALS_ENABLED) return '';
+    const r=recordFor(wid);
+    const br=x=>WIN_TYPES.filter(([k])=>x.by[k]).map(([k,l])=>`<b>${x.by[k]}</b> ${l.toLowerCase()}${x.by[k]>1&&k!=='DQ'?'s':''}`).join(', ');
+    let h=`<div class="psection-title">Record</div><div class="rec-box">`;
+    if(!r.matches.length) return h+`<div style="font-size:13px;color:var(--ink-soft)">No dual results yet.</div></div>`;
+    h+=`<div class="rec-nums"><div><div class="rn">${r.V.w}–${r.V.l}</div><div class="rl">Varsity</div></div>${(r.JV.w+r.JV.l)?`<div><div class="rn" style="font-size:24px">${r.JV.w}–${r.JV.l}</div><div class="rl">JV</div></div>`:''}</div>`;
+    if(r.V.w) h+=`<div class="rec-break">Varsity wins: ${br(r.V)}.</div>`;
+    if(r.JV.w) h+=`<div class="rec-break">JV wins: ${br(r.JV)}.</div>`;
+    h+=`<div class="rec-list">${r.matches.map(({d,b})=>`<div class="rec-row" data-rd="${d.id}"><span class="rd">${escapeHtml(medDate(d.date))}</span><span>vs ${escapeHtml(d.opponent||'Opponent')}${b.level==='JV'?'<span class="lvl">JV</span>':''}<div class="ro">${b.cls} lb${b.opp?', vs '+escapeHtml(b.opp):''}</div></span><span class="rr ${b.result}">${escapeHtml(resultTxt(b))}</span></div>`).join('')}</div></div>`;
+    return h;
+  }
+  function wireRecord(){ document.querySelectorAll('#pRecord [data-rd]').forEach(el=>el.onclick=()=>{ const id=el.dataset.rd; closeProfile(); resOpen=id; setView('results'); }); }
+  function saveDualSoon(d){
+    clearTimeout(resTimers[d.id]);
+    resTimers[d.id]=setTimeout(()=>{
+      const {id, ...data}=d;
+      fb.setDoc(dualRef(id), data).then(()=>{ delete resTimers[id]; }).catch(()=>{ delete resTimers[id]; banner('Could not save the dual. Check that the Firestore rules include “duals”.', true); });
+    }, 600);
+  }
+  async function newDual(){
+    if(!canEdit) return;
+    if(!luLoaded && !luLoading) await loadLineupWeights();
+    const ld=lineupData();
+    // Varsity from the projected lineup; if a class has none, fall back to the varsity wrestler assigned to that class.
+    const used=new Set(), pick={};
+    ld.nums.forEach(n=>{ const v=(ld.byCls[n]||[]).find(x=>x.w.lineupRole==='V' && !used.has(x.w.id)); if(v){ pick[n]=v.w; used.add(v.w.id); } });
+    ld.nums.forEach(n=>{ if(pick[n]) return; const w=roster.find(x=>x.lineupRole==='V' && !used.has(x.id) && targetOf(x)===n); if(w){ pick[n]=w; used.add(w.id); } });
+    const bouts=ld.nums.map(n=>{ const w=pick[n]; return {id:rid('b'), level:'V', cls:n, wid:w?w.id:'', name:w?w.name:'', result:'', how:'', score:'', opp:''}; });
+    const d={id:rid('D'), opponent:'', date:todayStr(), site:'home', created:Date.now(), by:user&&user.email, bouts};
+    duals[d.id]=d;
+    try{ const {id, ...data}=d; await fb.setDoc(dualRef(id), data); }
+    catch(e){ delete duals[d.id]; dualsErr=true; resOpen=null; setView('results'); return; }
+    resOpen=d.id; setView('results');
+    setTimeout(()=>{ const el=$('#rdOpp'); if(el) el.focus(); }, 60);
+  }
+  function renderResultsSafe(){
+    const ae=document.activeElement;
+    if(resOpen && ae && $('#resBody').contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName)){ updateResScore(); return; }
+    renderResults();
+  }
+  function renderResults(){
+    const body=$('#resBody');
+    if(dualsErr){ body.innerHTML=`<div class="toolbar"><div><h2>Dual results</h2></div></div><div class="res-rules"><b>One Firebase step needed.</b> Dual results are stored in a new “duals” area. In the Firebase console, open <b>Firestore Database → Rules</b>, add this block after the others, and click <b>Publish</b>:<pre>    match /duals/{dualId} {\n      allow read, write: if isCoach();\n    }</pre></div>`; return; }
+    if(resOpen && !duals[resOpen]) resOpen=null;
+    if(resOpen) return renderDual(duals[resOpen]);
+    const list=sortedDuals();
+    let w=0,l=0,t=0; list.forEach(d=>{ const sc=dualScore(d); if(sc.out==='W') w++; else if(sc.out==='L') l++; else if(sc.out==='T') t++; });
+    let vb=0, vw=0; list.forEach(d=>(d.bouts||[]).forEach(b=>{ if(b.level==='V' && b.wid && ['W','L'].includes(b.result) && b.how){ vb++; if(b.result==='W') vw++; } }));
+    let h=`<div class="toolbar"><div><h2>Dual results</h2><div class="hint">Start a dual from the Lineup tab to fill in your varsity, or tap New dual. Tap a dual to enter or fix results.</div></div><div class="btn-row"><button class="ghost-btn" id="resNew">+ New dual</button>${list.length?'<button class="ghost-btn" id="resCsv">Export CSV</button>':''}</div></div>`;
+    h+=`<div class="res-top"><div class="res-stat"><div class="n">${w}–${l}${t?'–'+t:''}</div><div class="l">Team record</div></div><div class="res-stat"><div class="n">${list.length}</div><div class="l">Duals</div></div><div class="res-stat"><div class="n">${vb?vw+'–'+(vb-vw):'—'}</div><div class="l">Varsity bouts</div></div></div>`;
+    if(!list.length) h+=`<div class="res-empty">No duals yet. Use <b>Start a dual</b> on the Lineup tab, or <b>+ New dual</b> above.</div>`;
+    else h+=`<div class="res-list">${list.map(d=>{ const sc=dualScore(d);
+      return `<button class="res-card" data-dual="${d.id}"><div class="res-badge ${sc.out}"><b>${sc.out||'—'}</b><span>${sc.entered?sc.us+'–'+sc.them:'no results'}</span></div><div class="rc-main"><div class="rc-opp">vs ${escapeHtml(d.opponent||'Opponent not set')}</div><div class="rc-sub">${escapeHtml(prettyDate(d.date))}, ${SITES[d.site]||'Home'}. ${sc.entered} of ${sc.total} varsity bouts entered.</div></div><span class="chev" style="font-size:20px;color:var(--ink-soft)">›</span></button>`; }).join('')}</div>`;
+    body.innerHTML=h;
+    $('#resNew').onclick=newDual;
+    const c=$('#resCsv'); if(c) c.onclick=exportResultsCSV;
+    body.querySelectorAll('[data-dual]').forEach(el=>el.onclick=()=>{ resOpen=el.dataset.dual; renderResults(); window.scrollTo(0,0); });
+  }
+  function boutRow(d,b){
+    const jv=b.level==='JV';
+    const who=`<select data-bf="wid"><option value="">${jv?'— Pick wrestler —':'— Open / forfeit —'}</option>${roster.map(w=>`<option value="${w.id}" ${w.id===b.wid?'selected':''}>${escapeHtml(w.name)}</option>`).join('')}${b.wid && !roster.some(w=>w.id===b.wid)?`<option value="${b.wid}" selected>${escapeHtml(b.name||'Former wrestler')}</option>`:''}</select>`;
+    const cls = jv ? `<div class="b-cls"><select data-bf="cls">${STD_CLASSES().map(n=>`<option value="${n}" ${Number(b.cls)===n?'selected':''}>${n}</option>`).join('')}</select></div>` : `<div class="b-cls">${b.cls}</div>`;
+    const res=`<div class="b-res"><button class="W ${b.result==='W'?'on':''}" data-br="W" ${!b.wid?'disabled title="Pick a wrestler first"':''}>W</button><button class="L ${b.result==='L'?'on':''}" data-br="L">L</button>${jv?'':`<button class="dff ${b.result==='DFF'?'on':''}" data-br="DFF" title="Neither team had a wrestler">Dbl FF</button>`}</div>`;
+    let det='';
+    if(b.result==='W'||b.result==='L'){
+      const ph=b.how==='F'?'Time 1:42':'Score 7-3';
+      det=`<div class="b-how">${WIN_TYPES.map(([k,l])=>`<button class="${b.how===k?'on':''}" data-bh="${k}">${l}</button>`).join('')}</div>`
+        +`<div class="b-inputs">${['FF','DEF','DQ'].includes(b.how)?'':`<input class="sc" data-bf="score" maxlength="12" placeholder="${ph}" value="${escapeHtml(b.score||'')}">`}<input class="op" data-bf="opp" maxlength="50" placeholder="Opponent’s wrestler (optional)" value="${escapeHtml(b.opp||'')}"></div>`;
+    } else if(b.result==='DFF') det=`<span class="b-hint">No points for either team.</span>`;
+    else det=`<span class="b-hint">${b.wid||jv?'Tap W or L.':'No Logan wrestler: tap L for a forfeit, or Dbl FF.'}</span>`;
+    const p=boutPts(b);
+    const pts = jv ? (b.result?'':'') : (p.us?`<div class="b-pts us">+${p.us}<small>Logan</small></div>`:p.them?`<div class="b-pts them">+${p.them}<small>Opp</small></div>`:'<div class="b-pts"></div>');
+    return `<div class="bout ${jv?'jv':''}" data-bout="${b.id}">${cls}<div class="b-who">${who}</div>${res}<div class="b-detail">${det}</div>${jv?`<div class="b-pts"><button class="b-del" data-bdel title="Remove this JV bout">×</button></div>`:pts}</div>`;
+  }
+  function renderDual(d){
+    const body=$('#resBody'), sc=dualScore(d);
+    const V=(d.bouts||[]).filter(b=>b.level==='V').sort((a,b)=>a.cls-b.cls), JV=(d.bouts||[]).filter(b=>b.level==='JV');
+    body.innerHTML=`<button class="ghost-btn res-back" id="resBackBtn">‹ All duals</button>
+      <div class="res-head"><div class="rh-fields">
+        <div class="field"><label for="rdOpp">Opponent</label><input id="rdOpp" type="text" maxlength="60" placeholder="Opponent school" value="${escapeHtml(d.opponent||'')}"></div>
+        <div class="field"><label for="rdDate">Date</label><input id="rdDate" type="date" value="${d.date||''}"></div>
+        <div class="field"><label for="rdSite">Where</label><select id="rdSite">${Object.entries(SITES).map(([k,l])=>`<option value="${k}" ${d.site===k?'selected':''}>${l}</option>`).join('')}</select></div>
+      </div><div class="res-score" id="resScore"></div></div>
+      <div class="res-sec"><h3>Varsity <small>Counts toward the team score</small></h3>${V.map(b=>boutRow(d,b)).join('')}</div>
+      <div class="res-sec"><h3>JV &amp; exhibition <small>Not part of the team score</small></h3>${JV.map(b=>boutRow(d,b)).join('')||'<div class="b-hint" style="padding:12px 16px">No JV bouts yet.</div>'}<div style="padding:10px 16px;border-top:1px solid var(--line)"><button class="linkbtn" id="resAddJV">+ Add JV bout</button></div></div>
+      <div class="res-foot"><button class="ghost-btn" id="resDel" style="color:var(--absent)">Delete this dual</button><button class="ghost-btn" id="resDone">Done</button></div>`;
+    updateResScore();
+    const find=id=>(d.bouts||[]).find(b=>b.id===id);
+    $('#resBackBtn').onclick=$('#resDone').onclick=()=>{ resOpen=null; renderResults(); window.scrollTo(0,0); };
+    $('#rdOpp').oninput=e=>{ d.opponent=e.target.value; saveDualSoon(d); updateResScore(); };
+    $('#rdDate').onchange=e=>{ d.date=e.target.value; saveDualSoon(d); };
+    $('#rdSite').onchange=e=>{ d.site=e.target.value; saveDualSoon(d); };
+    $('#resAddJV').onclick=()=>{ d.bouts.push({id:rid('b'), level:'JV', cls:STD_CLASSES()[0], wid:'', name:'', result:'', how:'', score:'', opp:''}); saveDualSoon(d); renderDual(d); };
+    $('#resDel').onclick=async()=>{ if(!confirm('Delete the dual vs '+(d.opponent||'this opponent')+'? This removes its results from every wrestler’s record.')) return;
+      try{ clearTimeout(resTimers[d.id]); delete resTimers[d.id]; await fb.deleteDoc(dualRef(d.id)); delete duals[d.id]; resOpen=null; renderResults(); } catch(e){ banner('Could not delete the dual.', true); } };
+    body.querySelectorAll('[data-bout]').forEach(row=>{
+      const b=find(row.dataset.bout);
+      row.querySelectorAll('[data-br]').forEach(btn=>btn.onclick=()=>{
+        const r=btn.dataset.br;
+        if(b.result===r){ b.result=''; b.how=''; }
+        else { b.result=r; if(r==='DFF') b.how=''; else if(!b.how && !b.wid && b.level==='V' && r==='L') b.how='FF'; }
+        saveDualSoon(d); renderDual(d);
+      });
+      row.querySelectorAll('[data-bh]').forEach(btn=>btn.onclick=()=>{ b.how = b.how===btn.dataset.bh ? '' : btn.dataset.bh; if(['FF','DEF','DQ'].includes(b.how)) b.score=''; saveDualSoon(d); renderDual(d); });
+      row.querySelectorAll('[data-bf]').forEach(inp=>{
+        const f=inp.dataset.bf;
+        const apply=()=>{ if(f==='wid'){ b.wid=inp.value; const w=roster.find(x=>x.id===inp.value); b.name=w?w.name:''; if(!b.wid && b.result==='W'){ b.result=''; b.how=''; } } else if(f==='cls') b.cls=Number(inp.value); else b[f]=inp.value; saveDualSoon(d); };
+        if(inp.tagName==='SELECT') inp.onchange=()=>{ apply(); renderDual(d); };
+        else inp.oninput=apply;
+      });
+      const del=row.querySelector('[data-bdel]'); if(del) del.onclick=()=>{ d.bouts=d.bouts.filter(x=>x.id!==b.id); saveDualSoon(d); renderDual(d); };
+    });
+  }
+  function updateResScore(){
+    const el=$('#resScore'); if(!el || !resOpen || !duals[resOpen]) return;
+    const d=duals[resOpen], sc=dualScore(d);
+    const word=sc.out==='W'?'Win':sc.out==='L'?'Loss':sc.out==='T'?'Tie':'';
+    el.innerHTML=`<div class="side"><div class="t">Logan</div><div class="v">${sc.us}</div></div><div class="dash">–</div><div class="side"><div class="t">${escapeHtml(d.opponent||'Opponent')}</div><div class="v">${sc.them}</div></div><div class="out">${word?`<b class="${sc.out}">${word}</b>, `:''}${sc.entered} of ${sc.total} varsity bouts entered</div>`;
+  }
+  function exportResultsCSV(){
+    const rows=[['Date','Opponent','Where','Level','Class','Wrestler','Result','Win Type','Score / Time','Opponent Wrestler','Team Points (Logan)','Team Points (Opp)']];
+    sortedDuals().slice().reverse().forEach(d=>(d.bouts||[]).slice().sort((a,b)=>(a.level>b.level?-1:a.level<b.level?1:a.cls-b.cls)).forEach(b=>{
+      const p=boutPts(b), w=roster.find(x=>x.id===b.wid);
+      rows.push([d.date, d.opponent||'', SITES[d.site]||'', b.level==='JV'?'JV':'Varsity', b.cls, w?w.name:(b.name||(b.wid?'':'(open)')), b.result==='DFF'?'Double forfeit':b.result, b.how?WT[b.how].label:'', b.score||'', b.opp||'', b.level==='JV'?'':p.us, b.level==='JV'?'':p.them]);
+    }));
+    downloadCSV(rows, 'matroom_dual_results_'+todayStr()+'.csv');
+  }
+
   // ---- Dashboard ----
   const DF = DASHBOARD_FEATURES, DASH_LOW_RATE=75, DASH_RECENT_DAYS=14, DASH_RECENT_MISSES=3;
   function dashStart(){ const t=todayStr(); let s=schedule.seasonStart || addDays(t,-SEASON_SCAN_DAYS); if(s<addDays(t,-400)) s=addDays(t,-400); return s; }
@@ -1606,6 +1869,11 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
       <li><b>Percent</b> shows each wrestler’s rate with a line for the team average. <b>Breakdown</b> splits the bar into present, absent, unmarked, and excused.</li>
       <li>Tap a wrestler to open their profile. <b>Export report</b> downloads a spreadsheet with one row per wrestler.</li>
       <li>Tap <b>Refresh</b> after fixing past attendance.</li></ul>`]
+    ['results','Dual results', `<ol><li>On the <b>Lineup</b> tab, tap <b>Start a dual</b>. It opens a scoresheet with your varsity already in each class. (Or use <b>+ New dual</b> on the Results tab.)</li>
+      <li>Type the opponent’s name. For each class, tap <b>W</b> or <b>L</b>, then how: Fall, Tech fall, Major, Decision, Forfeit, Default, or DQ. Add the score or fall time and the opponent’s name if you want.</li>
+      <li>The team score adds itself up: fall, forfeit, default, or DQ = 6, tech fall = 5, major = 4, decision = 3. If neither team has a wrestler, tap <b>Dbl FF</b>.</li>
+      <li>Add JV or exhibition bouts at the bottom. They count toward the wrestler’s JV record, not the team score.</li></ol>
+      <p>Everything saves as you go. Each wrestler’s profile shows their varsity and JV records (forfeit wins included) and every match. Fixing a result on the scoresheet fixes their record too.</p>`],
     ['profiles','Profiles & hydration tests', `<ul><li>In a profile, tap <b>Edit profile</b> to change name, class, grade, and contact info.</li>
       <li>Record a hydration test (specific gravity, weight, body fat %) to calculate minimum weight and lowest eligible class. If your state gives an official minimum, enter it to override the calculation.</li></ul>`],
     ['schedule','Schedule & attendance rate', `<ul><li><b>Schedule</b> sets practice days and the season start. Cancel or add a single date from the Daily tab.</li>
@@ -1653,6 +1921,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
         roster:rosterSnap.docs.map(x=>({id:x.id, ...x.data()})),
         attendance:attendanceOut,
         privateNotes:Object.fromEntries(notesSnap.docs.map(x=>[x.id, x.data()])),
+        duals: DUALS_ENABLED ? await fb.getDocs(fb.collection(fdb,'duals')).then(sn=>sn.docs.map(x=>({id:x.id, ...x.data()}))).catch(()=>[]) : [],
         settings:settingsOut
       };
       const blob=new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
@@ -1711,8 +1980,8 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   function stop(){
     if(!started) return;
     started=false;
-    [unsubRoster, unsubAtt, unsubSettings, unsubNotes].forEach(u=>{ if(u) u(); });
-    unsubRoster=unsubAtt=unsubSettings=unsubNotes=null;
+    [unsubRoster, unsubAtt, unsubSettings, unsubNotes, unsubDuals].forEach(u=>{ if(u) u(); });
+    unsubRoster=unsubAtt=unsubSettings=unsubNotes=unsubDuals=null; duals={}; resOpen=null; Object.values(resTimers).forEach(clearTimeout); resTimers={};
     if(unsubWeek){ unsubWeek.forEach(u=>u()); unsubWeek=null; }
     roster=[]; attendance={}; weekData={}; prevWeights={}; notes={}; hydro={}; luHist={}; luDays={}; luLoaded=false; luLoading=false; luToken++; dashDays={}; dashLoaded=false; dashLoading=false; dashTok++;
     if(profileOpenId) closeProfile();
@@ -1745,9 +2014,10 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   // ---- Data subscriptions ----
   function start(){
     $('#syncText').textContent='Connected';
+    watchDuals();
     unsubRoster = fb.onSnapshot(rosterCol(), snap=>{
       roster = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-      if(view==='day') renderDaily(); else if(view==='week') renderWeek(); else if(view==='lineup') renderLineup(); else renderDash();
+      if(view==='day') renderDaily(); else if(view==='week') renderWeek(); else if(view==='lineup') renderLineup(); else if(view==='results') renderResultsSafe(); else renderDash();
       if(kioskOn) renderKiosk();
       if(profileOpenId){ const w=roster.find(r=>r.id===profileOpenId); if(w) updateProfileHeader(w); }
     }, err=>{ $('#syncDot').className='dot off'; $('#syncText').textContent='Sync error: '+err.code; });
@@ -2125,6 +2395,9 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
     if(notTaken && !schedule.seasonStart && canEdit) cap+=` Set a season start under Schedule to skip preseason days.`;
     html+=`<div class="pchart-cap" style="margin:-10px 0 20px;text-align:left">${cap}</div>`;
 
+    // Dual record
+    if(DUALS_ENABLED) html+=`<div id="pRecord">${recordHtml(wid)}</div>`;
+
     // Weight management: target vs actual
     const target=targetOf(w);
     const lastWi=weighins.length?weighins[weighins.length-1]:null;
@@ -2190,6 +2463,7 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
 
     body.innerHTML=html;
     if(canEdit) wireHydro(wid);
+    if(DUALS_ENABLED) wireRecord();
 
     // Wire the profile editor
     if(canEdit){
@@ -2512,12 +2786,13 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   function shiftDate(n){ changeDate(addDays(selDate,n)); }
   function setView(v){
     view=v;
-    $('#tabDay').classList.toggle('active',v==='day'); $('#tabWeek').classList.toggle('active',v==='week'); $('#tabLineup').classList.toggle('active',v==='lineup'); $('#tabDash').classList.toggle('active',v==='dash');
-    $('#dailyView').classList.toggle('hidden',v!=='day'); $('#weekView').classList.toggle('hidden',v!=='week'); $('#lineupView').classList.toggle('hidden',v!=='lineup'); $('#dashView').classList.toggle('hidden',v!=='dash');
+    $('#tabDay').classList.toggle('active',v==='day'); $('#tabWeek').classList.toggle('active',v==='week'); $('#tabLineup').classList.toggle('active',v==='lineup'); $('#tabRes').classList.toggle('active',v==='results'); $('#tabDash').classList.toggle('active',v==='dash');
+    $('#dailyView').classList.toggle('hidden',v!=='day'); $('#weekView').classList.toggle('hidden',v!=='week'); $('#lineupView').classList.toggle('hidden',v!=='lineup'); $('#resView').classList.toggle('hidden',v!=='results'); $('#dashView').classList.toggle('hidden',v!=='dash');
     $('#dateNav').style.visibility=v==='day'?'visible':'hidden';
     if(v==='week'){ watchWeek(); renderWeek(); }
     else if(v==='lineup'){ renderLineup(); if(!luLoaded && !luLoading) loadLineupWeights(); }
     else if(v==='dash'){ renderDash(); if(!dashLoaded && !dashLoading) dashLoad(); }
+    else if(v==='results'){ renderResults(); }
     else renderDaily();
   }
 
@@ -2525,6 +2800,10 @@ function startApp(auth, fdb, fb, coachEmails, weightClasses){
   $('#prevDay').onclick=()=>shiftDate(-1); $('#nextDay').onclick=()=>shiftDate(1);
   $('#todayBtn').onclick=()=>changeDate(todayStr()); $('#dateInput').onchange=e=>changeDate(e.target.value);
   $('#tabDay').onclick=()=>setView('day'); $('#tabWeek').onclick=()=>setView('week'); $('#tabLineup').onclick=()=>setView('lineup'); $('#tabDash').onclick=()=>setView('dash');
+  $('#tabRes').onclick=()=>{ resOpen=null; setView('results'); };
+  $('#tabRes').classList.toggle('hidden', !DUALS_ENABLED);
+  $('#luStartDual').classList.toggle('hidden', !DUALS_ENABLED);
+  $('#luStartDual').onclick=newDual;
   $('#dashRefresh').onclick=()=>{ dashLoaded=false; dashLoad(); };
   $('#dashRange').onchange=()=>{ dashRange=$('#dashRange').value; renderDash(); };
   $('#dashExport').onclick=exportDashCSV;
